@@ -6,8 +6,8 @@ The tinylog provider binding for Easy Logging Facade for Java [(ELF4J)](https://
 
 As a Service Provider of the Easy Logging Facade for Java [(ELF4J)](https://github.com/elf4j/elf4j-api), I want to bind
 the logging capabilities of [tinylog](https://tinylog.org/v2/) to the ELF4J client application via the
-Java [SPI](https://docs.oracle.com/javase/tutorial/sound/SPI-intro.html) mechanism, so that the client application can
-use the tinylog features at run-time.
+Java [SPI](https://docs.oracle.com/javase/tutorial/sound/SPI-intro.html) mechanism, so that the ELF4J application can
+use the tinylog features at run-time without code change.
 
 ## Prerequisite
 
