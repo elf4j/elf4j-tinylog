@@ -1,13 +1,15 @@
 # elf4j-tinylog
 
-The tinylog provider binding for Easy Logging Facade for Java [(ELF4J)](https://github.com/elf4j/elf4j-api)
+The tinylog service provider binding for the Easy Logging Facade for Java ([ELF4J](https://github.com/elf4j/elf4j-api))
+SPI
 
 ## User story
 
-As a Service Provider of the Easy Logging Facade for Java [(ELF4J)](https://github.com/elf4j/elf4j-api), I want to bind
-the logging capabilities of [tinylog](https://tinylog.org/v2/) to the ELF4J client application via the
-Java [SPI](https://docs.oracle.com/javase/tutorial/sound/SPI-intro.html) mechanism, so that the ELF4J application can
-use the tinylog features at run-time without code change.
+As a service provider of the Easy Logging Facade for Java ([ELF4J](https://github.com/elf4j/elf4j-api)) SPI, I want to
+bind the logging capabilities of [tinylog](https://tinylog.org/v2/) to the ELF4J client application via the
+Java [SPI](https://docs.oracle.com/javase/tutorial/sound/SPI-intro.html) mechanism, so that any application using
+the [ELF4J](https://github.com/elf4j/elf4j-api) API for logging can decide to use the tinylog features at run-time
+without code change.
 
 ## Prerequisite
 
@@ -21,7 +23,7 @@ Java 8 or better
 
 Simply pack the JAR of this binding in the deployment classpath of any ELF4J client application. e.g. in Maven pom.xml,
 this provider bind JAR will be added as a runtime-scoped dependency. No code change needed since the client application
-codebase is already using the [ELF4J API](https://github.com/elf4j/elf4j-api) for logging.
+codebase is already using the [ELF4J](https://github.com/elf4j/elf4j-api) API for logging.
 
 At compile time, the client application is unaware of this run-time logging service provider. Using tinylog as the
 logging implementation is a deployment time decision of such client application.
