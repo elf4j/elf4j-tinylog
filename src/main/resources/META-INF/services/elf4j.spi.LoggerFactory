@@ -23,4 +23,4 @@
 #
 #
 
-org.elf4j.tinylog.TinylogLoggerFactory
+elf4j.tinylog.TinylogLoggerFactory

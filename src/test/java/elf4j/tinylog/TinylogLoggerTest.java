@@ -23,10 +23,10 @@
  *
  */
 
-package org.elf4j.tinylog;
+package elf4j.tinylog;
 
-import org.elf4j.Level;
-import org.elf4j.Logger;
+import elf4j.Level;
+import elf4j.Logger;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

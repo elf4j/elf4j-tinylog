@@ -23,12 +23,12 @@
  *
  */
 
-package org.elf4j.tinylog;
+package elf4j.tinylog;
 
+import elf4j.Level;
+import elf4j.Logger;
 import lombok.Value;
 import net.jcip.annotations.Immutable;
-import org.elf4j.Level;
-import org.elf4j.Logger;
 import org.tinylog.configuration.Configuration;
 import org.tinylog.format.AdvancedMessageFormatter;
 import org.tinylog.format.MessageFormatter;
@@ -41,7 +41,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
-import static org.elf4j.Level.*;
+import static elf4j.Level.*;
 
 /**
  * Adapt tinylog capabilities to cater a JLF Logger
