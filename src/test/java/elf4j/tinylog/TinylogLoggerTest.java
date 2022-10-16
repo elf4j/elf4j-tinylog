@@ -36,7 +36,7 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TinylogLoggerTest {
 
@@ -128,18 +128,19 @@ class TinylogLoggerTest {
     @Nested
     class name {
         @Test
-        void optToKeepNullsAndBlanksKeptAsIs() {
-            assertNull(Logger.instance((Class<?>) null).getName());
-            assertNull(Logger.instance((String) null).getName());
+        void optToSupplyCallerClassNameForNullOrNoargInstance() {
+            String thisClassName = this.getClass().getName();
+            assertTrue(thisClassName.contains(Logger.instance().getName()));
+            assertTrue(thisClassName.contains(Logger.instance((String) null).getName()));
+            assertTrue(thisClassName.contains(Logger.instance((Class<?>) null).getName()));
+        }
+
+        @Test
+        void blankOrEmptyNamesStayAsIs() {
             String blank = "   ";
             assertEquals(blank, Logger.instance(blank).getName());
             String empty = "";
             assertEquals("", Logger.instance(empty).getName());
-        }
-
-        @Test
-        void nullNamedLogger() {
-            Logger.instance((String) null).log("null named logger message");
         }
     }
 

@@ -34,6 +34,7 @@ import org.tinylog.format.AdvancedMessageFormatter;
 import org.tinylog.format.MessageFormatter;
 import org.tinylog.provider.LoggingProvider;
 import org.tinylog.provider.ProviderRegistry;
+import org.tinylog.runtime.RuntimeProvider;
 
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -48,9 +49,10 @@ import static elf4j.Level.*;
  */
 @Immutable
 public class TinylogJlfLogger implements Logger {
-    private static final int CALLER_FRAME_DEPTH = 3;
     private static final Level DEFAULT_LOG_LEVEL = INFO;
+    private static final int INSTANCE_CALLER_DEPTH = 4;
     private static final Map<LoggerKey, TinylogJlfLogger> LOGGERS_CACHE = new ConcurrentHashMap<>();
+    private static final int LOG_CALLER_DEPTH = 3;
     private static final MessageFormatter MESSAGE_FORMATTER =
             new AdvancedMessageFormatter(Configuration.getLocale(), Configuration.isEscapingEnabled());
     private static final EnumMap<Level, org.tinylog.Level> TINYLOG_LEVELS = keyedByJlfLevel();
@@ -64,12 +66,23 @@ public class TinylogJlfLogger implements Logger {
         this.level = level;
     }
 
-    static TinylogJlfLogger instance(String name) {
-        return getLoggerByKey(new LoggerKey(name, DEFAULT_LOG_LEVEL));
+    public static Logger instance() {
+        return getLoggerByKey(RuntimeProvider.getCallerClassName(INSTANCE_CALLER_DEPTH), DEFAULT_LOG_LEVEL);
     }
 
-    private static TinylogJlfLogger getLoggerByKey(LoggerKey loggerKey) {
-        return LOGGERS_CACHE.computeIfAbsent(loggerKey, k -> new TinylogJlfLogger(k.name, k.level));
+    public static Logger instance(Class<?> clazz) {
+        return getLoggerByKey(
+                clazz == null ? RuntimeProvider.getCallerClassName(INSTANCE_CALLER_DEPTH) : clazz.getName(),
+                DEFAULT_LOG_LEVEL);
+    }
+
+    static TinylogJlfLogger instance(String name) {
+        return getLoggerByKey(name == null ? RuntimeProvider.getCallerClassName(INSTANCE_CALLER_DEPTH) : name,
+                DEFAULT_LOG_LEVEL);
+    }
+
+    private static TinylogJlfLogger getLoggerByKey(String name, Level level) {
+        return LOGGERS_CACHE.computeIfAbsent(new LoggerKey(name, level), k -> new TinylogJlfLogger(k.name, k.level));
     }
 
     private static EnumMap<Level, org.tinylog.Level> keyedByJlfLevel() {
@@ -98,7 +111,7 @@ public class TinylogJlfLogger implements Logger {
         if (this.level == level) {
             return this;
         }
-        return getLoggerByKey(new LoggerKey(this.name, level));
+        return getLoggerByKey(this.name, level);
     }
 
     @Override
@@ -182,7 +195,7 @@ public class TinylogJlfLogger implements Logger {
         if (args instanceof Supplier<?>[]) {
             args = Arrays.stream(((Supplier<?>[]) args)).map(Supplier::get).toArray(Object[]::new);
         }
-        TINYLOG_PROVIDER.log(CALLER_FRAME_DEPTH,
+        TINYLOG_PROVIDER.log(LOG_CALLER_DEPTH,
                 null,
                 tinylogLevel,
                 t,
