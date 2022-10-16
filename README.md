@@ -13,7 +13,8 @@ time without code change.
 
 ## Prerequisite
 
-Java 8 or better
+- Java 8 or better
+- tinylog 2.5.0 or better
 
 ## Get it...
 
