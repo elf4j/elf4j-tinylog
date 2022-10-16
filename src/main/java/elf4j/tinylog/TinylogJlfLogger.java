@@ -27,7 +27,7 @@ package elf4j.tinylog;
 
 import elf4j.Level;
 import elf4j.Logger;
-import lombok.Value;
+import lombok.NonNull;
 import net.jcip.annotations.Immutable;
 import org.tinylog.configuration.Configuration;
 import org.tinylog.format.AdvancedMessageFormatter;
@@ -48,14 +48,14 @@ import static elf4j.Level.*;
  * Adapt tinylog capabilities to cater a JLF Logger
  */
 @Immutable
-public class TinylogJlfLogger implements Logger {
+class TinylogJlfLogger implements Logger {
+    private static final EnumMap<Level, Map<String, TinylogJlfLogger>> CACHED_LOGGERS = initCachedLoggers();
     private static final Level DEFAULT_LOG_LEVEL = INFO;
     private static final int INSTANCE_CALLER_DEPTH = 4;
-    private static final Map<LoggerKey, TinylogJlfLogger> LOGGERS_CACHE = new ConcurrentHashMap<>();
+    private static final EnumMap<Level, org.tinylog.Level> LEVEL_MAP = setLevelMap();
     private static final int LOG_CALLER_DEPTH = 3;
     private static final MessageFormatter MESSAGE_FORMATTER =
             new AdvancedMessageFormatter(Configuration.getLocale(), Configuration.isEscapingEnabled());
-    private static final EnumMap<Level, org.tinylog.Level> TINYLOG_LEVELS = keyedByJlfLevel();
     private static final LoggingProvider TINYLOG_PROVIDER = ProviderRegistry.getLoggingProvider();
     private static final org.tinylog.Level TINYLOG_PROVIDER_MINIMUM_LEVEL = TINYLOG_PROVIDER.getMinimumLevel();
     private final String name;
@@ -81,11 +81,22 @@ public class TinylogJlfLogger implements Logger {
                 DEFAULT_LOG_LEVEL);
     }
 
-    private static TinylogJlfLogger getLoggerByKey(String name, Level level) {
-        return LOGGERS_CACHE.computeIfAbsent(new LoggerKey(name, level), k -> new TinylogJlfLogger(k.name, k.level));
+    private static TinylogJlfLogger getLoggerByKey(@NonNull String name, @NonNull Level level) {
+        return CACHED_LOGGERS.get(level).computeIfAbsent(name, k -> new TinylogJlfLogger(k, level));
     }
 
-    private static EnumMap<Level, org.tinylog.Level> keyedByJlfLevel() {
+    private static EnumMap<Level, Map<String, TinylogJlfLogger>> initCachedLoggers() {
+        EnumMap<Level, Map<String, TinylogJlfLogger>> cachedLoggers = new EnumMap<>(Level.class);
+        cachedLoggers.put(TRACE, new ConcurrentHashMap<>());
+        cachedLoggers.put(DEBUG, new ConcurrentHashMap<>());
+        cachedLoggers.put(INFO, new ConcurrentHashMap<>());
+        cachedLoggers.put(WARN, new ConcurrentHashMap<>());
+        cachedLoggers.put(ERROR, new ConcurrentHashMap<>());
+        cachedLoggers.put(OFF, new ConcurrentHashMap<>());
+        return cachedLoggers;
+    }
+
+    private static EnumMap<Level, org.tinylog.Level> setLevelMap() {
         EnumMap<Level, org.tinylog.Level> jlfToTinylog = new EnumMap<>(Level.class);
         jlfToTinylog.put(TRACE, org.tinylog.Level.TRACE);
         jlfToTinylog.put(DEBUG, org.tinylog.Level.DEBUG);
@@ -185,7 +196,7 @@ public class TinylogJlfLogger implements Logger {
     }
 
     private void tinylog(Throwable t, Object message, Object[] args) {
-        org.tinylog.Level tinylogLevel = TINYLOG_LEVELS.get(this.level);
+        org.tinylog.Level tinylogLevel = LEVEL_MAP.get(this.level);
         if (tinylogLevel.ordinal() < TINYLOG_PROVIDER_MINIMUM_LEVEL.ordinal() || this.level == OFF) {
             return;
         }
@@ -202,11 +213,5 @@ public class TinylogJlfLogger implements Logger {
                 args == null ? null : MESSAGE_FORMATTER,
                 message,
                 args);
-    }
-
-    @Value
-    private static class LoggerKey {
-        String name;
-        Level level;
     }
 }
