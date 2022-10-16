@@ -66,11 +66,11 @@ class TinylogJlfLogger implements Logger {
         this.level = level;
     }
 
-    public static Logger instance() {
+    public static TinylogJlfLogger instance() {
         return getLoggerByKey(RuntimeProvider.getCallerClassName(INSTANCE_CALLER_DEPTH), DEFAULT_LOG_LEVEL);
     }
 
-    public static Logger instance(Class<?> clazz) {
+    public static TinylogJlfLogger instance(Class<?> clazz) {
         return getLoggerByKey(
                 clazz == null ? RuntimeProvider.getCallerClassName(INSTANCE_CALLER_DEPTH) : clazz.getName(),
                 DEFAULT_LOG_LEVEL);
