@@ -12,8 +12,9 @@ ELF4J API for logging can decide to use the tinylog features at deployment time 
 
 ## Prerequisite
 
-- Java 8 or better
-- tinylog 2.5.0 or better
+- Java 8+
+- ELF4J 2.1.0+
+- tinylog 2.5.0+
 
 ## Get it...
 
