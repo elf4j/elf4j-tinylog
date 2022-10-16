@@ -58,10 +58,10 @@ class TinylogJlfLogger implements Logger {
             new AdvancedMessageFormatter(Configuration.getLocale(), Configuration.isEscapingEnabled());
     private static final LoggingProvider TINYLOG_PROVIDER = ProviderRegistry.getLoggingProvider();
     private static final org.tinylog.Level TINYLOG_PROVIDER_MINIMUM_LEVEL = TINYLOG_PROVIDER.getMinimumLevel();
-    private final String name;
-    private final Level level;
+    @NonNull private final String name;
+    @NonNull private final Level level;
 
-    private TinylogJlfLogger(String name, Level level) {
+    private TinylogJlfLogger(@NonNull String name, @NonNull Level level) {
         this.name = name;
         this.level = level;
     }
@@ -108,12 +108,12 @@ class TinylogJlfLogger implements Logger {
     }
 
     @Override
-    public String getName() {
+    public @NonNull String getName() {
         return name;
     }
 
     @Override
-    public Level getLevel() {
+    public @NonNull Level getLevel() {
         return this.level;
     }
 
