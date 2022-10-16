@@ -66,11 +66,11 @@ class TinylogJlfLogger implements Logger {
         this.level = level;
     }
 
-    public static TinylogJlfLogger instance() {
+    static TinylogJlfLogger instance() {
         return getLoggerByKey(RuntimeProvider.getCallerClassName(INSTANCE_CALLER_DEPTH), DEFAULT_LOG_LEVEL);
     }
 
-    public static TinylogJlfLogger instance(Class<?> clazz) {
+    static TinylogJlfLogger instance(Class<?> clazz) {
         return getLoggerByKey(
                 clazz == null ? RuntimeProvider.getCallerClassName(INSTANCE_CALLER_DEPTH) : clazz.getName(),
                 DEFAULT_LOG_LEVEL);
@@ -97,14 +97,14 @@ class TinylogJlfLogger implements Logger {
     }
 
     private static EnumMap<Level, org.tinylog.Level> setLevelMap() {
-        EnumMap<Level, org.tinylog.Level> jlfToTinylog = new EnumMap<>(Level.class);
-        jlfToTinylog.put(TRACE, org.tinylog.Level.TRACE);
-        jlfToTinylog.put(DEBUG, org.tinylog.Level.DEBUG);
-        jlfToTinylog.put(INFO, org.tinylog.Level.INFO);
-        jlfToTinylog.put(WARN, org.tinylog.Level.WARN);
-        jlfToTinylog.put(ERROR, org.tinylog.Level.ERROR);
-        jlfToTinylog.put(OFF, org.tinylog.Level.OFF);
-        return jlfToTinylog;
+        EnumMap<Level, org.tinylog.Level> levelMap = new EnumMap<>(Level.class);
+        levelMap.put(TRACE, org.tinylog.Level.TRACE);
+        levelMap.put(DEBUG, org.tinylog.Level.DEBUG);
+        levelMap.put(INFO, org.tinylog.Level.INFO);
+        levelMap.put(WARN, org.tinylog.Level.WARN);
+        levelMap.put(ERROR, org.tinylog.Level.ERROR);
+        levelMap.put(OFF, org.tinylog.Level.OFF);
+        return levelMap;
     }
 
     @Override
