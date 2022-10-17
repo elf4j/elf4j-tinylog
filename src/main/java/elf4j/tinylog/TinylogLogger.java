@@ -29,8 +29,7 @@ import elf4j.Level;
 import elf4j.Logger;
 import lombok.NonNull;
 import net.jcip.annotations.Immutable;
-import org.tinylog.configuration.Configuration;
-import org.tinylog.format.AdvancedMessageFormatter;
+import org.tinylog.format.LegacyMessageFormatter;
 import org.tinylog.format.MessageFormatter;
 import org.tinylog.provider.LoggingProvider;
 import org.tinylog.provider.ProviderRegistry;
@@ -55,8 +54,7 @@ class TinylogLogger implements Logger {
     private static final EnumMap<Level, org.tinylog.Level> LEVEL_MAP = setLevelMap();
     private static final EnumMap<Level, Map<String, TinylogLogger>> LOGGER_CACHE = initLoggerCache();
     private static final int LOG_CALLER_DEPTH = 3;
-    private static final MessageFormatter MESSAGE_FORMATTER =
-            new AdvancedMessageFormatter(Configuration.getLocale(), Configuration.isEscapingEnabled());
+    private static final MessageFormatter MESSAGE_FORMATTER = new LegacyMessageFormatter();
     private static final LoggingProvider TINYLOG_PROVIDER = ProviderRegistry.getLoggingProvider();
     private static final org.tinylog.Level TINYLOG_PROVIDER_MINIMUM_LEVEL = TINYLOG_PROVIDER.getMinimumLevel();
     @NonNull private final String name;

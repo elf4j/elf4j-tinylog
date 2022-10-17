@@ -82,7 +82,7 @@ class TinylogLoggerTest {
 
         @Test
         void messageAndArgs() {
-            LOGGER.atDebug().log("message arg1 {}, arg2 {}", "a11111", new Object());
+            LOGGER.atLevel(Level.INFO).log("{} is a shorthand of {}", "atInfo()", "atLevel(Level.INFO)");
         }
 
         @Test
@@ -91,7 +91,7 @@ class TinylogLoggerTest {
                     .log("message supplier arg1 {}, arg2 {}, arg3 {}",
                             () -> "a11111",
                             () -> "a22222",
-                            () -> Arrays.stream(new Object[] { "a33333" }).collect(Collectors.toList()));
+                            () -> Arrays.asList("a33333"));
         }
 
         @Test
@@ -150,6 +150,38 @@ class TinylogLoggerTest {
         @Test
         void escapeToken() {
             LOGGER.atInfo().log("should not take '{}' as token when escaped is configured true", "a11111");
+        }
+    }
+
+    @Nested
+    class readmeSamples {
+        @Test
+        void messageAndArgs() {
+            LOGGER.atInfo().log("info message");
+            LOGGER.atLevel(Level.INFO).log("{} is a shorthand of {}", "atInfo()", "atLevel(Level.INFO)");
+            LOGGER.atWarn()
+                    .log("warn message with supplier arg1 {}, arg2 {}, arg3 {}",
+                            () -> "a11111",
+                            () -> "a22222",
+                            () -> Arrays.stream(new Object[] { "a33333" }).collect(Collectors.toList()));
+        }
+
+        @Test
+        void throwableAndMessageAndArgs() {
+            Logger logger = LOGGER.atError();
+            logger.log("level set omitted, this log's level is Level.ERROR");
+            Throwable ex = new Exception("ex message");
+            logger.log(ex);
+            logger.atWarn().log(ex, "this log's level switched to WARN on the fly");
+            logger.log(ex,
+                    "this log's level is now {} if the SPI provider opts to make the logger instance {}",
+                    "Level.ERROR",
+                    "immutable");
+            logger.atInfo()
+                    .log("set the {} before the {} inside the same {} logging statement to be certain",
+                            "Level",
+                            "final .log(...) call",
+                            "fluent-style");
         }
     }
 }
