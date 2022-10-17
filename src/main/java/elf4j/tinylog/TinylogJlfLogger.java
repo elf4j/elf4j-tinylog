@@ -38,10 +38,10 @@ import org.tinylog.runtime.RuntimeProvider;
 
 import java.util.Arrays;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 import static elf4j.Level.*;
 
@@ -88,7 +88,7 @@ class TinylogJlfLogger implements Logger {
 
     private static EnumMap<Level, Map<String, TinylogJlfLogger>> initCachedLoggers() {
         EnumMap<Level, Map<String, TinylogJlfLogger>> cachedLoggers = new EnumMap<>(Level.class);
-        Stream.of(Level.values()).forEach(l -> cachedLoggers.put(l, new ConcurrentHashMap<>()));
+        EnumSet.allOf(Level.class).forEach(l -> cachedLoggers.put(l, new ConcurrentHashMap<>()));
         return cachedLoggers;
     }
 
