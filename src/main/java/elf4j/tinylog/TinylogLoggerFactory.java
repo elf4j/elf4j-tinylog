@@ -39,16 +39,16 @@ import javax.annotation.Nullable;
 public class TinylogLoggerFactory implements LoggerFactory {
     @Override
     public Logger logger() {
-        return TinylogJlfLogger.instance();
+        return TinylogLogger.instance();
     }
 
     @Override
     public Logger logger(@Nullable String name) {
-        return TinylogJlfLogger.instance(name);
+        return TinylogLogger.instance(name);
     }
 
     @Override
     public Logger logger(Class<?> clazz) {
-        return TinylogJlfLogger.instance(clazz);
+        return TinylogLogger.instance(clazz);
     }
 }

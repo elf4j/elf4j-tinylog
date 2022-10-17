@@ -49,11 +49,11 @@ import static elf4j.Level.*;
  * Adapt tinylog capabilities to cater a JLF Logger
  */
 @Immutable
-class TinylogJlfLogger implements Logger {
+class TinylogLogger implements Logger {
     private static final Level DEFAULT_LOG_LEVEL = INFO;
     private static final int INSTANCE_CALLER_DEPTH = 4;
     private static final EnumMap<Level, org.tinylog.Level> LEVEL_MAP = setLevelMap();
-    private static final EnumMap<Level, Map<String, TinylogJlfLogger>> LOGGER_CACHE = initLoggerCache();
+    private static final EnumMap<Level, Map<String, TinylogLogger>> LOGGER_CACHE = initLoggerCache();
     private static final int LOG_CALLER_DEPTH = 3;
     private static final MessageFormatter MESSAGE_FORMATTER =
             new AdvancedMessageFormatter(Configuration.getLocale(), Configuration.isEscapingEnabled());
@@ -62,32 +62,32 @@ class TinylogJlfLogger implements Logger {
     @NonNull private final String name;
     @NonNull private final Level level;
 
-    private TinylogJlfLogger(@NonNull String name, @NonNull Level level) {
+    private TinylogLogger(@NonNull String name, @NonNull Level level) {
         this.name = name;
         this.level = level;
     }
 
-    static TinylogJlfLogger instance() {
+    static TinylogLogger instance() {
         return getLoggerByKey(RuntimeProvider.getCallerClassName(INSTANCE_CALLER_DEPTH), DEFAULT_LOG_LEVEL);
     }
 
-    static TinylogJlfLogger instance(Class<?> clazz) {
+    static TinylogLogger instance(Class<?> clazz) {
         return getLoggerByKey(
                 clazz == null ? RuntimeProvider.getCallerClassName(INSTANCE_CALLER_DEPTH) : clazz.getName(),
                 DEFAULT_LOG_LEVEL);
     }
 
-    static TinylogJlfLogger instance(String name) {
+    static TinylogLogger instance(String name) {
         return getLoggerByKey(name == null ? RuntimeProvider.getCallerClassName(INSTANCE_CALLER_DEPTH) : name,
                 DEFAULT_LOG_LEVEL);
     }
 
-    private static TinylogJlfLogger getLoggerByKey(@NonNull String name, @NonNull Level level) {
-        return LOGGER_CACHE.get(level).computeIfAbsent(name, k -> new TinylogJlfLogger(k, level));
+    private static TinylogLogger getLoggerByKey(@NonNull String name, @NonNull Level level) {
+        return LOGGER_CACHE.get(level).computeIfAbsent(name, k -> new TinylogLogger(k, level));
     }
 
-    private static EnumMap<Level, Map<String, TinylogJlfLogger>> initLoggerCache() {
-        EnumMap<Level, Map<String, TinylogJlfLogger>> loggerCache = new EnumMap<>(Level.class);
+    private static EnumMap<Level, Map<String, TinylogLogger>> initLoggerCache() {
+        EnumMap<Level, Map<String, TinylogLogger>> loggerCache = new EnumMap<>(Level.class);
         EnumSet.allOf(Level.class).forEach(level -> loggerCache.put(level, new ConcurrentHashMap<>()));
         return loggerCache;
     }
