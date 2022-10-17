@@ -88,7 +88,7 @@ class TinylogJlfLogger implements Logger {
 
     private static EnumMap<Level, Map<String, TinylogJlfLogger>> initCachedLoggers() {
         EnumMap<Level, Map<String, TinylogJlfLogger>> cachedLoggers = new EnumMap<>(Level.class);
-        EnumSet.allOf(Level.class).forEach(l -> cachedLoggers.put(l, new ConcurrentHashMap<>()));
+        EnumSet.allOf(Level.class).forEach(level -> cachedLoggers.put(level, new ConcurrentHashMap<>()));
         return cachedLoggers;
     }
 
