@@ -50,10 +50,10 @@ import static elf4j.Level.*;
  */
 @Immutable
 class TinylogJlfLogger implements Logger {
-    private static final EnumMap<Level, Map<String, TinylogJlfLogger>> CACHED_LOGGERS = initCachedLoggers();
     private static final Level DEFAULT_LOG_LEVEL = INFO;
     private static final int INSTANCE_CALLER_DEPTH = 4;
     private static final EnumMap<Level, org.tinylog.Level> LEVEL_MAP = setLevelMap();
+    private static final EnumMap<Level, Map<String, TinylogJlfLogger>> LOGGER_CACHE = initLoggerCache();
     private static final int LOG_CALLER_DEPTH = 3;
     private static final MessageFormatter MESSAGE_FORMATTER =
             new AdvancedMessageFormatter(Configuration.getLocale(), Configuration.isEscapingEnabled());
@@ -83,13 +83,13 @@ class TinylogJlfLogger implements Logger {
     }
 
     private static TinylogJlfLogger getLoggerByKey(@NonNull String name, @NonNull Level level) {
-        return CACHED_LOGGERS.get(level).computeIfAbsent(name, k -> new TinylogJlfLogger(k, level));
+        return LOGGER_CACHE.get(level).computeIfAbsent(name, k -> new TinylogJlfLogger(k, level));
     }
 
-    private static EnumMap<Level, Map<String, TinylogJlfLogger>> initCachedLoggers() {
-        EnumMap<Level, Map<String, TinylogJlfLogger>> cachedLoggers = new EnumMap<>(Level.class);
-        EnumSet.allOf(Level.class).forEach(level -> cachedLoggers.put(level, new ConcurrentHashMap<>()));
-        return cachedLoggers;
+    private static EnumMap<Level, Map<String, TinylogJlfLogger>> initLoggerCache() {
+        EnumMap<Level, Map<String, TinylogJlfLogger>> loggerCache = new EnumMap<>(Level.class);
+        EnumSet.allOf(Level.class).forEach(level -> loggerCache.put(level, new ConcurrentHashMap<>()));
+        return loggerCache;
     }
 
     private static EnumMap<Level, org.tinylog.Level> setLevelMap() {
