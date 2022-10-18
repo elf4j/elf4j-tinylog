@@ -66,21 +66,20 @@ class TinylogLogger implements Logger {
     }
 
     static TinylogLogger instance() {
-        return getLoggerByKey(RuntimeProvider.getCallerClassName(INSTANCE_CALLER_DEPTH), DEFAULT_LOG_LEVEL);
+        return getLogger(RuntimeProvider.getCallerClassName(INSTANCE_CALLER_DEPTH), DEFAULT_LOG_LEVEL);
     }
 
     static TinylogLogger instance(Class<?> clazz) {
-        return getLoggerByKey(
-                clazz == null ? RuntimeProvider.getCallerClassName(INSTANCE_CALLER_DEPTH) : clazz.getName(),
+        return getLogger(clazz == null ? RuntimeProvider.getCallerClassName(INSTANCE_CALLER_DEPTH) : clazz.getName(),
                 DEFAULT_LOG_LEVEL);
     }
 
     static TinylogLogger instance(String name) {
-        return getLoggerByKey(name == null ? RuntimeProvider.getCallerClassName(INSTANCE_CALLER_DEPTH) : name,
+        return getLogger(name == null ? RuntimeProvider.getCallerClassName(INSTANCE_CALLER_DEPTH) : name,
                 DEFAULT_LOG_LEVEL);
     }
 
-    private static TinylogLogger getLoggerByKey(@NonNull String name, @NonNull Level level) {
+    private static TinylogLogger getLogger(@NonNull String name, @NonNull Level level) {
         return LOGGER_CACHE.get(level).computeIfAbsent(name, k -> new TinylogLogger(k, level));
     }
 
@@ -116,7 +115,7 @@ class TinylogLogger implements Logger {
         if (this.level == level) {
             return this;
         }
-        return getLoggerByKey(this.name, level);
+        return getLogger(this.name, level);
     }
 
     @Override
