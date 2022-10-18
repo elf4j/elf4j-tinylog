@@ -45,7 +45,7 @@ import java.util.function.Supplier;
 import static elf4j.Level.*;
 
 /**
- * Adapt tinylog capabilities to cater a JLF Logger
+ * Adapt tinylog capabilities to cater a ElF4J Logger
  */
 @Immutable
 class TinylogLogger implements Logger {
