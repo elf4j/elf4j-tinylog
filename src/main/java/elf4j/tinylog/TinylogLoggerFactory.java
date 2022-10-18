@@ -48,7 +48,7 @@ public class TinylogLoggerFactory implements LoggerFactory {
     }
 
     @Override
-    public Logger logger(Class<?> clazz) {
+    public Logger logger(@Nullable Class<?> clazz) {
         return TinylogLogger.instance(clazz);
     }
 }
