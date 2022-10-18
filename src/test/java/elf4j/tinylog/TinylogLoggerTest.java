@@ -40,10 +40,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TinylogLoggerTest {
 
-    public static final Logger LOGGER = Logger.instance(TinylogLoggerTest.class);
-
     @Nested
     class levels {
+        private final Logger LOGGER = Logger.instance(TinylogLoggerTest.class);
 
         @Test
         void optToSupplyDefaultLevelAsInfo() {
@@ -69,6 +68,7 @@ class TinylogLoggerTest {
 
     @Nested
     class log {
+        public final Logger LOGGER = Logger.instance(TinylogLoggerTest.class);
 
         @Test
         void object() {
@@ -127,6 +127,8 @@ class TinylogLoggerTest {
 
     @Nested
     class name {
+        private final Logger LOGGER = Logger.instance(TinylogLoggerTest.class);
+
         @Test
         void optToSupplyCallerClassNameForNullOrNoargInstance() {
             String thisClassName = this.getClass().getName();
@@ -146,11 +148,13 @@ class TinylogLoggerTest {
 
     @Nested
     class readmeSamples {
+        private final Logger logger = Logger.instance(readmeSamples.class);
+
         @Test
         void messageAndArgs() {
-            LOGGER.atInfo().log("info message");
-            LOGGER.atLevel(Level.INFO).log("{} is a shorthand of {}", "atInfo()", "atLevel(Level.INFO)");
-            LOGGER.atWarn()
+            logger.atInfo().log("info message");
+            logger.atLevel(Level.INFO).log("{} is a shorthand of {}", "atInfo()", "atLevel(Level.INFO)");
+            logger.atWarn()
                     .log("warn message with supplier arg1 {}, arg2 {}, arg3 {}",
                             () -> "a11111",
                             () -> "a22222",
@@ -159,20 +163,25 @@ class TinylogLoggerTest {
 
         @Test
         void throwableAndMessageAndArgs() {
-            Logger logger = LOGGER.atError();
-            logger.log("level set omitted, this log's level is Level.ERROR");
+            this.logger.atInfo().log("let see immutability in action...");
+            Logger errorLogger = this.logger.atError();
+            errorLogger.log("level set omitted, the log's level is Level.ERROR");
             Throwable ex = new Exception("ex message");
-            logger.log(ex);
-            logger.atWarn().log(ex, "this log's level switched to WARN on the fly");
-            logger.log(ex,
-                    "this log's level is now {} if the SPI provider opts to make the logger instance {}",
-                    "Level.ERROR",
-                    "immutable");
-            logger.atInfo()
-                    .log("set the {} before the {} inside the same {} logging statement to be certain",
-                            "Level",
-                            "final .log(...) call",
-                            "fluent-style");
+            errorLogger.atWarn().log(ex, "the log's level switched to WARN on the fly");
+            errorLogger.atError()
+                    .log(ex,
+                            "the {} is {} here because the {} instance is {}, and the instance log level is already {}",
+                            "atError() call",
+                            "unnecessary",
+                            "errorLogger",
+                            "immutable",
+                            "Level.ERROR");
+            errorLogger.log(ex,
+                    "now at Level.ERROR together with the exception stack trace, logging some expensive items to compute: item1 {}, item2 {}, item3 {}, item4 {}, ...",
+                    () -> "i11111",
+                    () -> "i22222",
+                    () -> Arrays.asList("i33333"),
+                    () -> Arrays.stream(new Object[] { "i44444" }).collect(Collectors.toList()));
         }
     }
 }
