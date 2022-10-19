@@ -147,6 +147,16 @@ class TinylogLoggerTest {
     }
 
     @Nested
+    class placeholder {
+        Logger logger = Logger.instance(placeholder.class).atInfo();
+
+        @Test
+        void simulateTokenEscape() {
+            logger.log("printing the placeholder token as-is - {} - using {}", "{}", "the arg replacement mechanism");
+        }
+    }
+
+    @Nested
     class readmeSamples {
         private final Logger logger = Logger.instance(readmeSamples.class);
 
