@@ -180,7 +180,7 @@ class TinylogLoggerTest {
                             "unnecessary",
                             "immutable");
             errorLogger.log(ex,
-                    "now at Level.ERROR, together with the exception stack trace, logging some expensive items to compute: item1 {}, item2 {}, item3 {}, item4 {}, ...",
+                    "now at Level.ERROR, together with the exception stack trace, logging some items expensive to compute: item1 {}, item2 {}, item3 {}, item4 {}, ...",
                     () -> "i11111",
                     () -> "i22222",
                     () -> Arrays.asList("i33333"),
