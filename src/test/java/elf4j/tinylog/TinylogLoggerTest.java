@@ -176,11 +176,11 @@ class TinylogLoggerTest {
                             "instance");
             errorLogger.atError()
                     .log(ex,
-                            "the atError() call is {} here because the errorLogger instance is {}, and the instance log level is already Level.ERROR",
+                            "the atError() call is {} because the errorLogger instance is {}, and the instance's log level has always been Level.ERROR",
                             "unnecessary",
                             "immutable");
             errorLogger.log(ex,
-                    "now at Level.ERROR together with the exception stack trace, logging some expensive items to compute: item1 {}, item2 {}, item3 {}, item4 {}, ...",
+                    "now at Level.ERROR, together with the exception stack trace, logging some expensive items to compute: item1 {}, item2 {}, item3 {}, item4 {}, ...",
                     () -> "i11111",
                     () -> "i22222",
                     () -> Arrays.asList("i33333"),
