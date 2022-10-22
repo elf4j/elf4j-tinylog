@@ -169,12 +169,12 @@ class TinylogLogger implements Logger {
     }
 
     @Override
-    public void log(Throwable t, String message) {
+    public void log(Throwable t, Object message) {
         tinylog(t, message, null);
     }
 
     @Override
-    public void log(Throwable t, Supplier<String> message) {
+    public void log(Throwable t, Supplier<?> message) {
         tinylog(t, message, null);
     }
 
