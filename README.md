@@ -24,7 +24,19 @@ code change.
 ## Use it...
 
 If you are using the ELF4J API for logging, and wish to select or change to use tinylog as the run-time implementation,
-then simply pack this binding JAR in the classpath when the application deploys. No code change needed.
+then simply pack this binding JAR in the classpath when the application deploys. e.g. with Maven, this would be a
+dependency of runtime scope:
+
+```
+        <dependency>
+            <groupId>io.github.elf4j</groupId>
+            <artifactId>elf4j-tinylog</artifactId>
+            <version>grab the latest from maven central</version>
+            <scope>runtime</scope>
+        </dependency>
+```
+
+No code change needed.
 
 At compile time, the client code is unaware of this run-time logging service provider. Because of the ELF4J API, opting
 for tinylog as the logging implementation is a deployment-time decision.
