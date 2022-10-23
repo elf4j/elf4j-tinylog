@@ -24,8 +24,15 @@ code change.
 ## Use it...
 
 If you are using the ELF4J API for logging, and wish to select or change to use tinylog as the run-time implementation,
-then simply pack this binding JAR in the classpath when the application deploys. e.g. with Maven, this would be a
-dependency of runtime scope:
+then simply pack this binding JAR in the classpath when the application deploys. No code change needed. At compile time,
+the client code is unaware of this run-time logging service provider. Because of the ELF4J API, opting for tinylog as
+the logging implementation is a deployment-time decision.
+
+The usual [tinylog configuration](https://tinylog.org/v2/configuration/) applies.
+
+With Maven,
+
+- An end-user application would use this provider as a dependency of the `runtime` scope:
 
 ```
         <dependency>
@@ -36,10 +43,6 @@ dependency of runtime scope:
         </dependency>
 ```
 
-No code change needed.
-
-At compile time, the client code is unaware of this run-time logging service provider. Because of the ELF4J API, opting
-for tinylog as the logging implementation is a deployment-time decision.
-
-The usual [tinylog configuration](https://tinylog.org/v2/configuration/) applies.
-
+- A library, API, or server/container codebase would use the `test` or `provided` scope; or use the ELF4J API only
+  without any SPI provider like this, at all. That is, instead of dictating the logging provider, the facilitating
+  codebase should leave the logging provider selection to the end-user application.
