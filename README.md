@@ -30,9 +30,7 @@ the logging implementation is a deployment-time decision.
 
 The usual [tinylog configuration](https://tinylog.org/v2/configuration/) applies.
 
-With Maven,
-
-- An end-user application would use this provider as a dependency of the `runtime` scope:
+With Maven, an end-user application would use this provider as a dependency of the `runtime` scope:
 
 ```
         <dependency>
@@ -43,6 +41,6 @@ With Maven,
         </dependency>
 ```
 
-- A library, API, or server/container codebase would use the `test` or `provided` scope; or use the ELF4J API only
-  without any SPI provider like this, at all. That is, instead of dictating the logging provider, the facilitating
-  codebase should leave the logging provider selection to the end-user application.
+Note: A library, API, or server/container codebase would use the `test` or `provided` scope; or use the ELF4J API only
+without any SPI provider like this, at all. That is, instead of dictating a logging provider, the facilitating codebase
+should leave the choice on logging provider to the end-user application.
