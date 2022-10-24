@@ -41,6 +41,6 @@ With Maven, an end-user application would use this provider as a dependency of t
         </dependency>
 ```
 
-Note: A library, API, or server/container codebase would use the `test` or `provided` scope; or use only the ELF4J API 
-without any SPI provider like this, at all. That is, instead of dictating a logging provider, the facilitating codebase
-should leave the choice on logging provider to the end-user application.
+Note: A library, API, or server/container codebase would use the `test` or `provided` scope; or just use the ELF4J API -
+without any SPI provider like this, at all. Only one logging provider should be loaded and working at run-time; the
+facilitating codebase should leave the provider choice to the end-user application.
