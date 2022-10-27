@@ -111,14 +111,6 @@ class TinylogLogger implements Logger {
     }
 
     @Override
-    public Logger atLevel(Level level) {
-        if (this.level == level) {
-            return this;
-        }
-        return getLogger(this.name, level);
-    }
-
-    @Override
     public Logger atTrace() {
         return atLevel(TRACE);
     }
@@ -186,6 +178,13 @@ class TinylogLogger implements Logger {
     @Override
     public void log(Throwable t, String message, Supplier<?>... args) {
         tinylog(t, message, args);
+    }
+
+    private Logger atLevel(Level level) {
+        if (this.level == level) {
+            return this;
+        }
+        return getLogger(this.name, level);
     }
 
     private void tinylog(Throwable t, Object message, Object[] args) {
