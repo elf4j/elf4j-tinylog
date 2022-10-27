@@ -14,7 +14,7 @@ code change.
 ## Prerequisite
 
 - Java 8+
-- [ELF4J](https://github.com/elf4j/elf4j-api) 3.0.0+
+- [ELF4J](https://github.com/elf4j/elf4j-api) 4.0.0+
 - tinylog 2.5.0+
 
 ## Get it...
