@@ -148,7 +148,7 @@ class TinylogLoggerTest {
                         "level",
                         "enabled");
             }
-            debug.log(() -> "alternative to the level guard, using a supplier function achieves the same goal");
+            debug.log(() -> "alternative to the level guard, using a supplier function should achieves the same goal, pending quality of the logging provider");
         }
 
         @Test
