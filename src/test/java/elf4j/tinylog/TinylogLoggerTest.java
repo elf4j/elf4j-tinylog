@@ -128,7 +128,7 @@ class TinylogLoggerTest {
 
     @Nested
     class readmeSamples {
-        private Logger logger = Logger.instance(readmeSamples.class);
+        private final Logger logger = Logger.instance(readmeSamples.class);
 
         @Test
         void messagesArgsAndGuards() {
@@ -138,9 +138,9 @@ class TinylogLoggerTest {
                             () -> "a11111",
                             () -> "a22222",
                             () -> Arrays.stream(new Object[] { "a33333" }).collect(Collectors.toList()));
-            Logger atDebug = logger.atDebug();
-            if (atDebug.isEnabled()) {
-                atDebug.log("a {} guarded by a {}, so {} is created {} DEBUG {} is {}",
+            Logger debug = logger.atDebug();
+            if (debug.isEnabled()) {
+                debug.log("a {} guarded by a {}, so {} is created {} DEBUG {} is {}",
                         "long message",
                         "level check",
                         "no message object",
@@ -148,29 +148,30 @@ class TinylogLoggerTest {
                         "level",
                         "enabled");
             }
-            atDebug.log(() -> "alternative to the level guard, using a supplier function achieves the same goal");
+            debug.log(() -> "alternative to the level guard, using a supplier function achieves the same goal");
         }
 
         @Test
         void throwableAndMessageAndArgs() {
             logger.atInfo().log("let's see immutability in action...");
-            Logger atError = logger.atError();
+            Logger error = logger.atError();
             Throwable ex = new Exception("ex message");
-            atError.log(ex, "level set omitted, the log level is Level.ERROR");
-            atError.atWarn()
+            error.log(ex, "level set omitted, the log level is Level.ERROR");
+            error.atWarn()
                     .log(ex,
                             "the log level switched to WARN on the fly. that is, {} returns a {} and {} Logger {}",
                             "atWarn()",
                             "different",
                             "immutable",
                             "instance");
-            atError.atError()
+            error.atError()
                     .log(ex,
-                            "here the atError() call is {} because the {} logger instance is {}, and the instance's log level has always been Level.ERROR",
+                            "here the {} call is {} because the {} logger instance is {}, and the instance's log level has always been Level.ERROR",
+                            "atError()",
                             "unnecessary",
-                            "atError",
+                            "error",
                             "immutable");
-            atError.log(ex,
+            error.log(ex,
                     "now at Level.ERROR, together with the exception stack trace, logging some items expensive to compute: item1 {}, item2 {}, item3 {}, item4 {}, ...",
                     () -> "i11111",
                     () -> "i22222",
