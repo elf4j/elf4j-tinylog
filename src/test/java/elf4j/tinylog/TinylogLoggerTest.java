@@ -25,7 +25,6 @@
 
 package elf4j.tinylog;
 
-import elf4j.Level;
 import elf4j.Logger;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -37,26 +36,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TinylogLoggerTest {
-
-    @Nested
-    class levels {
-        private final Logger LOGGER = Logger.instance(TinylogLoggerTest.class);
-
-        @Test
-        void optToSupplyDefaultLevelAsInfo() {
-            assertEquals(Level.INFO, LOGGER.getLevel());
-            LOGGER.log("opt to provide default level");
-        }
-
-        @Test
-        void noArgAtHonorsLeveOnMethodName() {
-            assertEquals(Level.TRACE, LOGGER.atTrace().getLevel());
-            assertEquals(Level.DEBUG, LOGGER.atDebug().getLevel());
-            assertEquals(Level.INFO, LOGGER.atInfo().getLevel());
-            assertEquals(Level.WARN, LOGGER.atWarn().getLevel());
-            assertEquals(Level.ERROR, LOGGER.atError().getLevel());
-        }
-    }
 
     @Nested
     class log {
@@ -119,7 +98,6 @@ class TinylogLoggerTest {
 
     @Nested
     class name {
-        private final Logger LOGGER = Logger.instance(TinylogLoggerTest.class);
 
         @Test
         void optToSupplyCallerClassNameForNullOrNoargInstance() {
@@ -150,37 +128,49 @@ class TinylogLoggerTest {
 
     @Nested
     class readmeSamples {
-        private final Logger logger = Logger.instance(readmeSamples.class);
+        private Logger logger = Logger.instance(readmeSamples.class);
 
         @Test
-        void messageAndArgs() {
+        void messagesArgsAndGuards() {
             logger.atInfo().log("info message");
             logger.atWarn()
                     .log("warn message with supplier arg1 {}, arg2 {}, arg3 {}",
                             () -> "a11111",
                             () -> "a22222",
                             () -> Arrays.stream(new Object[] { "a33333" }).collect(Collectors.toList()));
+            Logger atDebug = logger.atDebug();
+            if (atDebug.isEnabled()) {
+                atDebug.log("a {} guarded by a {}, so {} is created {} DEBUG {} is {}",
+                        "long message",
+                        "level check",
+                        "no message object",
+                        "unless",
+                        "level",
+                        "enabled");
+            }
+            atDebug.log(() -> "alternative to the level guard, using a supplier function achieves the same goal");
         }
 
         @Test
         void throwableAndMessageAndArgs() {
-            logger.atInfo().log("let see immutability in action...");
-            Logger errorLogger = logger.atError();
+            logger.atInfo().log("let's see immutability in action...");
+            Logger atError = logger.atError();
             Throwable ex = new Exception("ex message");
-            errorLogger.log(ex, "level set omitted, the log level is Level.ERROR");
-            errorLogger.atWarn()
+            atError.log(ex, "level set omitted, the log level is Level.ERROR");
+            atError.atWarn()
                     .log(ex,
                             "the log level switched to WARN on the fly. that is, {} returns a {} and {} Logger {}",
                             "atWarn()",
                             "different",
                             "immutable",
                             "instance");
-            errorLogger.atError()
+            atError.atError()
                     .log(ex,
-                            "the atError() call is {} because the errorLogger instance is {}, and the instance's log level has always been Level.ERROR",
+                            "here the atError() call is {} because the {} logger instance is {}, and the instance's log level has always been Level.ERROR",
                             "unnecessary",
+                            "atError",
                             "immutable");
-            errorLogger.log(ex,
+            atError.log(ex,
                     "now at Level.ERROR, together with the exception stack trace, logging some items expensive to compute: item1 {}, item2 {}, item3 {}, item4 {}, ...",
                     () -> "i11111",
                     () -> "i22222",
