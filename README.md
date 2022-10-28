@@ -23,10 +23,10 @@ code change.
 
 ## Use it...
 
-If you are using the [ELF4J API](https://github.com/elf4j/elf4j-api#the-client-api) for logging, and wish to select or change to use tinylog as the run-time implementation,
-then simply pack this binding JAR in the classpath when the application deploys. No code change needed. At compile time,
-the client code is unaware of this run-time logging service provider. Because of the ELF4J API, opting for tinylog as
-the logging implementation is a deployment-time decision.
+If you are using the [ELF4J API](https://github.com/elf4j/elf4j-api#the-client-api) for logging, and wish to select or
+change to use tinylog as the run-time implementation, then simply pack this binding JAR in the classpath when the
+application deploys. No code change needed. At compile time, the client code is unaware of this run-time logging service
+provider. Because of the ELF4J API, opting for tinylog as the logging implementation is a deployment-time decision.
 
 The usual [tinylog configuration](https://tinylog.org/v2/configuration/) applies.
 
