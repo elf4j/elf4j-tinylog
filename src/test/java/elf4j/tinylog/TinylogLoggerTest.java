@@ -38,65 +38,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class TinylogLoggerTest {
 
     @Nested
-    class log {
-        public final Logger LOGGER = Logger.instance(TinylogLoggerTest.class);
-
-        @Test
-        void object() {
-            LOGGER.log("log message");
-        }
-
-        @Test
-        void supplier() {
-            LOGGER.atTrace().log(() -> "supplier message");
-        }
-
-        @Test
-        void messageAndArgs() {
-            LOGGER.atInfo().log("{} is a shorthand of {}", "atInfo()", "atLevel(Level.INFO)");
-        }
-
-        @Test
-        void messageAndSuppliers() {
-            LOGGER.atWarn()
-                    .log("message supplier arg1 {}, arg2 {}, arg3 {}",
-                            () -> "a11111",
-                            () -> "a22222",
-                            () -> Arrays.asList("a33333"));
-        }
-
-        @Test
-        void throwable() {
-            LOGGER.atError().log(new Exception("ex message"));
-        }
-
-        @Test
-        void throwableAndMessage() {
-            LOGGER.atError().log(new Exception("ex message"), "log message");
-        }
-
-        @Test
-        void throwableAndSupplier() {
-            LOGGER.atError().log(new Exception("ex message"), () -> "supplier log message");
-        }
-
-        @Test
-        void throwableAndMessageAndArgs() {
-            LOGGER.atError().log(new Exception("ex message"), "log message with arg {}", "a11111");
-        }
-
-        @Test
-        void throwableAndMessageAndSupplierArgs() {
-            LOGGER.atError()
-                    .log(new Exception("ex message"),
-                            "log message with supplier arg1 {}, arg2 {}, arg3 {}",
-                            () -> "a11111",
-                            () -> "a22222",
-                            () -> Arrays.stream(new Object[] { "a33333" }).collect(Collectors.toList()));
-        }
-    }
-
-    @Nested
     class name {
 
         @Test
