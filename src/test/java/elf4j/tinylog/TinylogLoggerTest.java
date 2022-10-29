@@ -166,10 +166,10 @@ class TinylogLoggerTest {
                             "instance");
             error.atError()
                     .log(ex,
-                            "here the {} call is {} because the {} logger instance is {}, and the instance's log level has always been Level.ERROR",
+                            "here the {} call is {} because the {} instance is {}, and the instance's log level has always been Level.ERROR",
                             "atError()",
                             "unnecessary",
-                            "error",
+                            "error logger",
                             "immutable");
             error.log(ex,
                     "now at Level.ERROR, together with the exception stack trace, logging some items expensive to compute: item1 {}, item2 {}, item3 {}, item4 {}, ...",
