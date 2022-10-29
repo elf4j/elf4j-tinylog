@@ -155,8 +155,9 @@ class TinylogLoggerTest {
         void throwableAndMessageAndArgs() {
             logger.atInfo().log("let's see immutability in action...");
             Logger error = logger.atError();
+            error.log("this is an immutable logger instance whose level is Level.ERROR");
             Throwable ex = new Exception("ex message");
-            error.log(ex, "level set omitted, the log level is Level.ERROR");
+            error.log(ex, "level set omitted but we know the level is Level.ERROR");
             error.atWarn()
                     .log(ex,
                             "the log level switched to WARN on the fly. that is, {} returns a {} and {} Logger {}",
@@ -166,7 +167,7 @@ class TinylogLoggerTest {
                             "instance");
             error.atError()
                     .log(ex,
-                            "here the {} call is {} because the {} instance is {}, and the instance's log level has always been Level.ERROR",
+                            "here the {} call is {} because the {} instance is {}, and the instance's log level has and will always be Level.ERROR",
                             "atError()",
                             "unnecessary",
                             "error logger",
