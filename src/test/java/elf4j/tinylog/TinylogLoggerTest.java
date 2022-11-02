@@ -76,7 +76,7 @@ class TinylogLoggerTest {
         void messagesArgsAndGuards() {
             logger.atInfo().log("info message");
             logger.atWarn()
-                    .log("message arguments of Supplier<?> and other Object types can be mixed and matched, e.g. arg1 {}, arg2 {}, arg3 {}",
+                    .log("message arguments of Supplier<?> and other Object types can be mixed, e.g. arg1 {}, arg2 {}, arg3 {}",
                             "a11111",
                             "a22222",
                             arg(() -> Arrays.stream(new Object[] { "a33333 supplier" }).collect(Collectors.toList())));
