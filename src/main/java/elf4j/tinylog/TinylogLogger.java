@@ -150,7 +150,10 @@ class TinylogLogger implements Logger {
 
     @Override
     public void log(String message, Object... args) {
-        tinylog(null, message, args);
+        if (!isEnabled()) {
+            return;
+        }
+        tinylog(null, message, supply(args));
     }
 
     @Override
@@ -175,7 +178,14 @@ class TinylogLogger implements Logger {
 
     @Override
     public void log(Throwable t, String message, Object... args) {
-        tinylog(t, message, args);
+        if (!isEnabled()) {
+            return;
+        }
+        tinylog(t, message, supply(args));
+    }
+
+    private static Object[] supply(Object[] args) {
+        return Arrays.stream(args).map(arg -> arg instanceof Supplier<?> ? ((Supplier<?>) arg).get() : arg).toArray();
     }
 
     @Override

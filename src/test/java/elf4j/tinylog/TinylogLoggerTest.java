@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
+import static elf4j.Logger.arg;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -75,10 +76,10 @@ class TinylogLoggerTest {
         void messagesArgsAndGuards() {
             logger.atInfo().log("info message");
             logger.atWarn()
-                    .log("warn message with supplier arg1 {}, arg2 {}, arg3 {}",
-                            () -> "a11111",
-                            () -> "a22222",
-                            () -> Arrays.stream(new Object[] { "a33333" }).collect(Collectors.toList()));
+                    .log("message arguments of Supplier<?> and other Object types can be mixed and matched, e.g. arg1 {}, arg2 {}, arg3 {}",
+                            "a11111",
+                            "a22222",
+                            arg(() -> Arrays.stream(new Object[] { "a33333 supplier" }).collect(Collectors.toList())));
             Logger debug = logger.atDebug();
             if (debug.isEnabled()) {
                 debug.log("a {} guarded by a {}, so {} is created {} DEBUG {} is {}",
@@ -115,10 +116,10 @@ class TinylogLoggerTest {
                             "immutable");
             error.log(ex,
                     "now at Level.ERROR, together with the exception stack trace, logging some items expensive to compute: item1 {}, item2 {}, item3 {}, item4 {}, ...",
-                    () -> "i11111",
-                    () -> "i22222",
-                    () -> Arrays.asList("i33333"),
-                    () -> Arrays.stream(new Object[] { "i44444" }).collect(Collectors.toList()));
+                    "i11111",
+                    arg(() -> "i22222"),
+                    "i33333",
+                    arg(() -> Arrays.stream(new Object[] { "i44444" }).collect(Collectors.toList())));
         }
     }
 }
