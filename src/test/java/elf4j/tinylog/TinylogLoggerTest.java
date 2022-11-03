@@ -84,8 +84,8 @@ class TinylogLoggerTest {
             assertEquals(INFO, logger.getLevel(), "immutable logger's level/state never changes");
 
             Logger debug = logger.atDebug();
-            assertNotSame(logger, debug);
-            assertEquals(logger.getName(), debug.getName());
+            assertNotSame(logger, debug, "different instances of different levels");
+            assertEquals(logger.getName(), debug.getName(), "same name, only level is different");
             assertEquals(Level.DEBUG, debug.getLevel());
             if (debug.isEnabled()) {
                 debug.log("a {} message guarded by a {}, so that no {} is created unless DEBUG level is {}",
