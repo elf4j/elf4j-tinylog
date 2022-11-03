@@ -33,7 +33,6 @@ import org.junit.jupiter.api.Test;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import static elf4j.util.MessageArguments.arg;
 import static org.junit.jupiter.api.Assertions.*;
 
 class TinylogLoggerTest {
@@ -74,11 +73,7 @@ class TinylogLoggerTest {
 
         @Test
         void messagesArgsAndGuards() {
-            logger.atWarn()
-                    .log("message arguments of Supplier<?> and other Object types can be mixed, e.g. arg1 {}, arg2 {}, arg3 {}",
-                            "a11111",
-                            arg(() -> Arrays.stream(new Object[] { "a22222 supplier" }).collect(Collectors.toList())),
-                            "a33333");
+            logger.atWarn().log("message with arguments - arg1 {}, arg2 {}, arg3 {}", "a11111", "a22222", "a33333");
             logger.atInfo().log("info message");
             Logger debug = logger.atDebug();
             assertNotSame(logger, debug);
@@ -118,10 +113,10 @@ class TinylogLoggerTest {
                             "immutable");
             error.log(ex,
                     "now at Level.ERROR, together with the exception stack trace, logging some items expensive to compute: item1 {}, item2 {}, item3 {}, item4 {}, ...",
-                    "i11111",
-                    arg(() -> "i22222"),
-                    "i33333",
-                    arg(() -> Arrays.stream(new Object[] { "i44444" }).collect(Collectors.toList())));
+                    () -> "i11111",
+                    () -> "i22222",
+                    () -> "i33333",
+                    () -> Arrays.stream(new Object[] { "i44444" }).collect(Collectors.toList()));
         }
     }
 }
