@@ -69,12 +69,15 @@ class TinylogLoggerTest {
 
     @Nested
     class readmeSamples {
-        private final Logger logger = Logger.instance(readmeSamples.class);
+        private final Logger logger = Logger.instance(readmeSamples.class).atInfo();
 
         @Test
         void messagesArgsAndGuards() {
-            logger.atWarn().log("message with arguments - arg1 {}, arg2 {}, arg3 {}", "a11111", "a22222", "a33333");
-            logger.atInfo().log("info message");
+            assertEquals(Level.INFO, logger.getLevel());
+            logger.log("info level message");
+            logger.atWarn()
+                    .log("warn level message with arguments - arg1 {}, arg2 {}, arg3 {}", "a11111", "a22222", "a33333");
+
             Logger debug = logger.atDebug();
             assertNotSame(logger, debug);
             assertEquals(logger.getName(), debug.getName());
@@ -92,9 +95,10 @@ class TinylogLoggerTest {
 
         @Test
         void throwableAndMessageAndArgs() {
-            logger.atInfo().log("let's see immutability in action...");
+            logger.log("let's see immutability in action...");
+
             Logger error = logger.atError();
-            error.log("this is an immutable logger instance whose level is Level.ERROR");
+            error.log("this is an immutable Logger instance whose level is Level.ERROR");
             Throwable ex = new Exception("ex message");
             error.log(ex, "level set omitted but we know the level is Level.ERROR");
             error.atWarn()
@@ -109,7 +113,7 @@ class TinylogLoggerTest {
                             "here the {} call is {} because the {} instance is {}, and the instance's log level has and will always be Level.ERROR",
                             "atError()",
                             "unnecessary",
-                            "error logger",
+                            "error error",
                             "immutable");
             error.log(ex,
                     "now at Level.ERROR, together with the exception stack trace, logging some items expensive to compute: item1 {}, item2 {}, item3 {}, item4 {}, ...",
