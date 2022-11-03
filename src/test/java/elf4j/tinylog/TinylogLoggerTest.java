@@ -89,7 +89,7 @@ class TinylogLoggerTest {
                         "message object",
                         "enabled by system-wide configuration of the logging provider");
             }
-            debug.log(() -> "alternative to the level guard, using a Supplier<?> function like this should achieve the same goal of avoid unnecessary message creation, pending quality of the logging provider");
+            debug.log(() -> "alternative to the level guard, using a Supplier<?> function like this should achieve the same goal of avoiding unnecessary message creation, pending quality of the logging provider");
         }
 
         @Test
