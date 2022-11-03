@@ -83,12 +83,11 @@ class TinylogLoggerTest {
             assertEquals(logger.getName(), debug.getName());
             assertEquals(Level.DEBUG, debug.getLevel());
             if (debug.isEnabled()) {
-                debug.log("a {} message guarded by a {}, so that no {} is created {} DEBUG level is {}",
+                debug.log("a {} message guarded by a {}, so that no {} is created unless DEBUG level is {}",
                         "long and expensive-to-construct",
                         "level check",
                         "message object",
-                        "unless",
-                        "enabled by the configuration of the logging provider");
+                        "enabled by system-wide configuration of the logging provider");
             }
             debug.log(() -> "alternative to the level guard, using a Supplier<?> function like this should achieve the same goal of avoid unnecessary message creation, pending quality of the logging provider");
         }
