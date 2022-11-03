@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import static elf4j.Logger.arg;
+import static elf4j.util.MessageArguments.arg;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -74,12 +74,12 @@ class TinylogLoggerTest {
 
         @Test
         void messagesArgsAndGuards() {
-            logger.atInfo().log("info message");
             logger.atWarn()
                     .log("message arguments of Supplier<?> and other Object types can be mixed, e.g. arg1 {}, arg2 {}, arg3 {}",
                             "a11111",
-                            "a22222",
-                            arg(() -> Arrays.stream(new Object[] { "a33333 supplier" }).collect(Collectors.toList())));
+                            arg(() -> Arrays.stream(new Object[] { "a22222 supplier" }).collect(Collectors.toList())),
+                            "a33333");
+            logger.atInfo().log("info message");
             Logger debug = logger.atDebug();
             if (debug.isEnabled()) {
                 debug.log("a {} guarded by a {}, so {} is created {} DEBUG {} is {}",

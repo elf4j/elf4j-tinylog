@@ -43,6 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 import static elf4j.Level.*;
+import static elf4j.util.MessageArguments.supply;
 
 /**
  * Adapt tinylog capabilities to cater a ELF4J Logger
@@ -131,6 +132,11 @@ class TinylogLogger implements Logger {
     }
 
     @Override
+    public @NonNull Level getLevel() {
+        return this.level;
+    }
+
+    @Override
     public boolean isEnabled() {
         if (this.level == OFF) {
             return false;
@@ -182,10 +188,6 @@ class TinylogLogger implements Logger {
             return;
         }
         tinylog(t, message, supply(args));
-    }
-
-    private static Object[] supply(Object[] args) {
-        return Arrays.stream(args).map(arg -> arg instanceof Supplier<?> ? ((Supplier<?>) arg).get() : arg).toArray();
     }
 
     @Override
