@@ -25,6 +25,7 @@
 
 package elf4j.tinylog;
 
+import elf4j.Level;
 import elf4j.Logger;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -33,8 +34,7 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import static elf4j.util.MessageArguments.arg;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class TinylogLoggerTest {
 
@@ -81,6 +81,9 @@ class TinylogLoggerTest {
                             "a33333");
             logger.atInfo().log("info message");
             Logger debug = logger.atDebug();
+            assertNotSame(logger, debug);
+            assertEquals(logger.getName(), debug.getName());
+            assertEquals(Level.DEBUG, debug.getLevel());
             if (debug.isEnabled()) {
                 debug.log("a {} guarded by a {}, so {} is created {} DEBUG {} is {}",
                         "long message",
@@ -88,7 +91,7 @@ class TinylogLoggerTest {
                         "no message object",
                         "unless",
                         "level",
-                        "enabled");
+                        "enabled by application configuration");
             }
             debug.log(() -> "alternative to the level guard, using a supplier function should achieve the same goal, pending quality of the logging provider");
         }
