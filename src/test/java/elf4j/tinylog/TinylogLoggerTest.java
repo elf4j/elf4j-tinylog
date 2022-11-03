@@ -33,6 +33,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
+import static elf4j.Level.INFO;
 import static org.junit.jupiter.api.Assertions.*;
 
 class TinylogLoggerTest {
@@ -59,11 +60,15 @@ class TinylogLoggerTest {
 
     @Nested
     class placeholder {
-        Logger logger = Logger.instance(placeholder.class).atInfo();
+        Logger logger = Logger.instance();
 
         @Test
-        void simulateTokenEscape() {
-            logger.log("printing the placeholder token as-is - {} - using {}", "{}", "the arg replacement mechanism");
+        void defaultLevelAndCacheAndPlaceholderPrint() {
+            logger.log("logger instance {}'s default level is {}", logger, logger.getLevel());
+            assertEquals(INFO, logger.getLevel());
+            Logger info = logger.atInfo();
+            assertSame(logger, info, "logger instance of the same name and level is cached and re-used");
+            info.log("printing the placeholder token as-is: {}, using the arg replacement mechanism", "{}");
         }
     }
 
@@ -73,10 +78,10 @@ class TinylogLoggerTest {
 
         @Test
         void messagesArgsAndGuards() {
-            assertEquals(Level.INFO, logger.getLevel());
-            logger.log("info level message");
-            logger.atWarn()
-                    .log("warn level message with arguments - arg1 {}, arg2 {}, arg3 {}", "a11111", "a22222", "a33333");
+            assertEquals(INFO, logger.getLevel());
+            logger.log("info level message with arguments - arg1 {}, arg2 {}, arg3 {}", "a11111", "a22222", "a33333");
+            logger.atWarn().log("switched to warn level on the fly");
+            assertEquals(INFO, logger.getLevel(), "immutable logger's level/state never changes");
 
             Logger debug = logger.atDebug();
             assertNotSame(logger, debug);
@@ -94,15 +99,14 @@ class TinylogLoggerTest {
 
         @Test
         void throwableAndMessageAndArgs() {
-            logger.log("let's see immutability in action...");
-
             Logger error = logger.atError();
             error.log("this is an immutable Logger instance whose level is Level.ERROR");
             Throwable ex = new Exception("ex message");
+            assertEquals(Level.ERROR, error.getLevel());
             error.log(ex, "level set omitted but we know the level is Level.ERROR");
             error.atWarn()
                     .log(ex,
-                            "the log level switched to WARN on the fly. that is, {} returns a {} and {} Logger {}",
+                            "switched to warn level on the fly. that is, {} returns a {} and {} Logger {}",
                             "atWarn()",
                             "different",
                             "immutable",
