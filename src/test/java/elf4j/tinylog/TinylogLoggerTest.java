@@ -88,7 +88,8 @@ class TinylogLoggerTest {
             assertEquals(logger.getName(), debug.getName(), "same name, only level is different");
             assertEquals(Level.DEBUG, debug.getLevel());
             if (debug.isEnabled()) {
-                debug.log("a {} message guarded by a {}, so that no {} is created unless DEBUG level is {}",
+                debug.log(
+                        "a {} message guarded by a {}, so that no {} is created unless this logger (name and level) is {}",
                         "long and expensive-to-construct",
                         "level check",
                         "message object",
