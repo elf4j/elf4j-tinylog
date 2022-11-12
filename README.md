@@ -36,7 +36,6 @@ With Maven, an end-user application would use this provider as a dependency of t
         <dependency>
             <groupId>io.github.elf4j</groupId>
             <artifactId>elf4j-tinylog</artifactId>
-            <version>grab the latest from maven central</version>
             <scope>runtime</scope>
         </dependency>
 ```
