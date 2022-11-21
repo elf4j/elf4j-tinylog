@@ -63,21 +63,37 @@ class TinylogLoggerTest {
         Logger logger = Logger.instance();
 
         @Test
-        void defaultLevelAndCacheAndPlaceholderPrint() {
-            logger.log("logger instance {}'s default level is {}", logger, logger.getLevel());
+        void defaultNameAndLevel() {
+            logger.log("no-arg logger instance {} in class {} has default logger name: {}, and default level: {}",
+                    logger,
+                    this.getClass().getName(),
+                    logger.getName(),
+                    logger.getLevel());
             assertEquals(INFO, logger.getLevel());
-            Logger info = logger.atInfo();
-            assertSame(logger, info, "logger instance of the same name and level is cached and re-used");
-            info.log("printing the placeholder token as-is: {}, using the arg replacement mechanism", "{}");
+        }
+
+        @Test
+        void cacheLoggerWithSameNameAndLevel() {
+            Logger error = logger.atError();
+            Logger error2 = logger.atError();
+            assertSame(error, error2, "logger instance of the same name and level is cached and re-used");
+        }
+
+        @Test
+        void printPlaceholderAsIs() {
+            logger.log("printing the placeholder token as-is: {}, using the arg replacement mechanism", "{}");
         }
     }
 
     @Nested
-    class readmeSamples {
-        private final Logger logger = Logger.instance(readmeSamples.class).atInfo();
+    class ReadmeSample {
+        private final Logger defaultLogger = Logger.instance();
 
         @Test
         void messagesArgsAndGuards() {
+            defaultLogger.log("default logger name: {}", defaultLogger.getName());
+            defaultLogger.log("default log level: {}", defaultLogger.getLevel());
+            Logger logger = defaultLogger.atInfo();
             assertEquals(INFO, logger.getLevel());
             logger.log("info level message with arguments - arg1 {}, arg2 {}, arg3 {}", "a11111", "a22222", "a33333");
             logger.atWarn().log("switched to warn level on the fly");
@@ -97,21 +113,24 @@ class TinylogLoggerTest {
             }
             debug.log(() -> "alternative to the level guard, using a Supplier<?> function like this should achieve the same goal of avoiding unnecessary message creation, pending quality of the logging provider");
         }
+    }
+
+    @Nested
+    class ReadmeSample2 {
+        private final Logger error = Logger.instance(ReadmeSample2.class).atError();
 
         @Test
         void throwableAndMessageAndArgs() {
             Throwable ex = new Exception("ex message");
-            Logger error = logger.atError();
-            error.log(ex, "this is an immutable Logger instance whose level is Level.ERROR");
+            error.log(ex,
+                    "this is an immutable Logger instance whose name is {}, and level is {}",
+                    error.getName(),
+                    error.getLevel());
             assertEquals(Level.ERROR, error.getLevel());
-            error.log(ex, "level set omitted but we know the level is Level.ERROR");
+            error.log(ex, "level set omitted here but we know the level is Level.ERROR");
             error.atWarn()
-                    .log(ex,
-                            "switched to warn level on the fly. that is, {} returns a {} and {} Logger {}",
-                            "atWarn()",
-                            "different",
-                            "immutable",
-                            "instance");
+                    .log("switched to WARN level on the fly. that is, error.atWarn() returns a different Logger instance from {}",
+                            error);
             error.atError()
                     .log(ex,
                             "here the {} call is {} because a Logger instance is {}, and the instance's log level has and will always be Level.ERROR",
