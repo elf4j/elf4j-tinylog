@@ -36,11 +36,10 @@ With Maven, an end-user application would use this provider as a dependency of t
         <dependency>
             <groupId>io.github.elf4j</groupId>
             <artifactId>elf4j-tinylog</artifactId>
-            <version>grab the latest from maven central</version>
             <scope>runtime</scope>
         </dependency>
 ```
 
 Note: A library, API, or server/container codebase would use the `test` or `provided` scope; or just use the ELF4J API -
-without any SPI provider like this, at all. Only one logging provider should be loaded and working at run-time; the
+without any SPI provider, at all. Only one logging provider should be loaded and working at run-time; the
 facilitating codebase should leave the provider choice to the end-user application.
