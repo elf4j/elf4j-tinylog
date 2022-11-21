@@ -94,9 +94,13 @@ class TinylogLoggerTest {
             defaultLogger.log("default logger name: {}", defaultLogger.getName());
             defaultLogger.log("default log level: {}", defaultLogger.getLevel());
             Logger logger = defaultLogger.atInfo();
+            logger.log("level set omitted here but we know the level is {}", logger.getLevel());
             assertEquals(INFO, logger.getLevel());
-            logger.log("info level message with arguments - arg1 {}, arg2 {}, arg3 {}", "a11111", "a22222", "a33333");
-            logger.atWarn().log("switched to warn level on the fly");
+            logger.log("logging message with arguments - arg1 {}, arg2 {}, arg3 {}", "a11111", "a22222", "a33333");
+            logger.atWarn()
+                    .log("switched to WARN level on the fly. that is, {} is a different Logger instance from {}",
+                            logger.atWarn(),
+                            logger);
             assertEquals(INFO, logger.getLevel(), "immutable logger's level/state never changes");
 
             Logger debug = logger.atDebug();
@@ -122,21 +126,17 @@ class TinylogLoggerTest {
         @Test
         void throwableAndMessageAndArgs() {
             Throwable ex = new Exception("ex message");
-            error.log(ex,
-                    "this is an immutable Logger instance whose name is {}, and level is {}",
-                    error.getName(),
-                    error.getLevel());
+            error.atInfo()
+                    .log("{} is an immutable Logger instance whose name is {}, and level is {}",
+                            error,
+                            error.getName(),
+                            error.getLevel());
             assertEquals(Level.ERROR, error.getLevel());
-            error.log(ex, "level set omitted here but we know the level is Level.ERROR");
-            error.atWarn()
-                    .log("switched to WARN level on the fly. that is, error.atWarn() returns a different Logger instance from {}",
-                            error);
             error.atError()
                     .log(ex,
-                            "here the {} call is {} because a Logger instance is {}, and the instance's log level has and will always be Level.ERROR",
+                            "here the {} call is unnecessary because a Logger instance is immutable, and the instance's log level has and will always be {}",
                             "atError()",
-                            "unnecessary",
-                            "immutable");
+                            error.getLevel());
             error.log(ex,
                     "now at Level.ERROR, together with the exception stack trace, logging some items expensive to compute: item1 {}, item2 {}, item3 {}, item4 {}, ...",
                     () -> "i11111",
