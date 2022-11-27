@@ -32,7 +32,7 @@ The usual [tinylog configuration](https://tinylog.org/v2/configuration/) applies
 
 With Maven, an end-user application would use this provider as a dependency of the `runtime` scope:
 
-```
+```xml
         <dependency>
             <groupId>io.github.elf4j</groupId>
             <artifactId>elf4j-tinylog</artifactId>
