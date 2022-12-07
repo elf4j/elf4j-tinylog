@@ -91,10 +91,11 @@ class TinylogLoggerTest {
 
         @Test
         void messagesArgsAndGuards() {
-            logger.log("logger name is {}", ReadmeSample.class.getName());
+            logger.log("logger name {} is the same as param class name {}",
+                    logger.getName(),
+                    ReadmeSample.class.getName());
             assertEquals(ReadmeSample.class.getName(), logger.getName());
-            logger.log("default log level is {} but this depends on the individual logging provider",
-                    logger.getLevel());
+            logger.log("default log level is {}, which depends on the individual logging provider", logger.getLevel());
             Logger info = logger.atInfo();
             info.log("level set omitted here but we know the level is {}", INFO);
             assertEquals(INFO, info.getLevel());
