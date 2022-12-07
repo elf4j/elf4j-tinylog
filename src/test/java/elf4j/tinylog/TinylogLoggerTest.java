@@ -60,7 +60,7 @@ class TinylogLoggerTest {
 
     @Nested
     class placeholder {
-        Logger logger = Logger.instance();
+        Logger logger = Logger.instance(placeholder.class);
 
         @Test
         void defaultNameAndLevel() {
@@ -87,7 +87,7 @@ class TinylogLoggerTest {
 
     @Nested
     class ReadmeSample {
-        private final Logger logger = Logger.instance();
+        private final Logger logger = Logger.instance(ReadmeSample.class);
 
         @Test
         void messagesArgsAndGuards() {
