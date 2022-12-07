@@ -87,21 +87,21 @@ class TinylogLoggerTest {
 
     @Nested
     class ReadmeSample {
-        private final Logger defaultLogger = Logger.instance();
+        private final Logger logger = Logger.instance();
 
         @Test
         void messagesArgsAndGuards() {
-            defaultLogger.log("default logger name: {}", defaultLogger.getName());
-            defaultLogger.log("default log level: {}", defaultLogger.getLevel());
-            Logger logger = defaultLogger.atInfo();
-            logger.log("level set omitted here but we know the level is {}", logger.getLevel());
-            assertEquals(INFO, logger.getLevel());
-            logger.log("logging message with arguments - arg1 {}, arg2 {}, arg3 {}", "a11111", "a22222", "a33333");
-            logger.atWarn()
+            logger.log("default logger name: {}", logger.getName());
+            logger.log("default log level is {} but this depends on the individual provider", logger.getLevel());
+            Logger info = logger.atInfo();
+            info.log("level set omitted here but we know the level is {}", INFO);
+            assertEquals(INFO, info.getLevel());
+            info.log("logging message with arguments - arg1 {}, arg2 {}, arg3 {}", "a11111", "a22222", "a33333");
+            info.atWarn()
                     .log("switched to WARN level on the fly. that is, {} is a different Logger instance from {}",
-                            logger.atWarn(),
-                            logger);
-            assertEquals(INFO, logger.getLevel(), "immutable logger's level/state never changes");
+                            info.atWarn(),
+                            info);
+            assertEquals(INFO, info.getLevel(), "immutable info's level/state never changes");
 
             Logger debug = logger.atDebug();
             assertNotSame(logger, debug, "different instances of different levels");
@@ -109,7 +109,7 @@ class TinylogLoggerTest {
             assertEquals(Level.DEBUG, debug.getLevel());
             if (debug.isEnabled()) {
                 debug.log(
-                        "a {} message guarded by a {}, so that no {} is created unless this logger - name and level combined - is {}",
+                        "a {} message guarded by a {}, so that no {} is created unless this info - name and level combined - is {}",
                         "long and expensive-to-construct",
                         "level check",
                         "message object",
