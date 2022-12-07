@@ -91,7 +91,7 @@ class TinylogLoggerTest {
 
         @Test
         void messagesArgsAndGuards() {
-            logger.log("default logger name: {}", logger.getName());
+            logger.log("logger name is {}", logger.getName());
             logger.log("default log level is {} but this depends on the individual provider", logger.getLevel());
             Logger info = logger.atInfo();
             info.log("level set omitted here but we know the level is {}", INFO);
