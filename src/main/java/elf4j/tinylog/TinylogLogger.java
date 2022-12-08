@@ -155,9 +155,6 @@ class TinylogLogger implements Logger {
 
     @Override
     public void log(String message, Object... args) {
-        if (!isEnabled()) {
-            return;
-        }
         tinylog(null, message, args);
     }
 
@@ -183,9 +180,6 @@ class TinylogLogger implements Logger {
 
     @Override
     public void log(Throwable t, String message, Object... args) {
-        if (!isEnabled()) {
-            return;
-        }
         tinylog(t, message, args);
     }
 
