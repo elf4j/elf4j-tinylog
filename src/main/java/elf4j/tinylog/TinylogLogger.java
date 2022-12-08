@@ -59,10 +59,13 @@ class TinylogLogger implements Logger {
     private static final org.tinylog.Level TINYLOG_PROVIDER_MINIMUM_LEVEL = TINYLOG_PROVIDER.getMinimumLevel();
     @NonNull private final String name;
     @NonNull private final Level level;
+    private final boolean enabled;
 
     private TinylogLogger(@NonNull String name, @NonNull Level level) {
         this.name = name;
         this.level = level;
+        this.enabled =
+                this.level != OFF && LEVEL_MAP.get(this.level).ordinal() >= TINYLOG_PROVIDER_MINIMUM_LEVEL.ordinal();
     }
 
     static TinylogLogger instance() {
@@ -137,10 +140,7 @@ class TinylogLogger implements Logger {
 
     @Override
     public boolean isEnabled() {
-        if (this.level == OFF) {
-            return false;
-        }
-        return LEVEL_MAP.get(this.level).ordinal() >= TINYLOG_PROVIDER_MINIMUM_LEVEL.ordinal();
+        return this.enabled;
     }
 
     @Override
@@ -202,8 +202,7 @@ class TinylogLogger implements Logger {
     }
 
     private void tinylog(Throwable t, Object message, Object[] args) {
-        org.tinylog.Level tinylogLevel = LEVEL_MAP.get(this.level);
-        if (tinylogLevel.ordinal() < TINYLOG_PROVIDER_MINIMUM_LEVEL.ordinal() || this.level == OFF) {
+        if (!this.isEnabled()) {
             return;
         }
         if (message instanceof Supplier<?>) {
@@ -214,7 +213,7 @@ class TinylogLogger implements Logger {
         }
         TINYLOG_PROVIDER.log(LOG_CALLER_DEPTH,
                 null,
-                tinylogLevel,
+                LEVEL_MAP.get(this.level),
                 t,
                 args == null ? null : MESSAGE_FORMATTER,
                 message,
