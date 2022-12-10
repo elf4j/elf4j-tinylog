@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static elf4j.Level.ERROR;
 import static elf4j.Level.INFO;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -117,7 +118,7 @@ class TinylogLoggerTest {
             assertEquals(Level.DEBUG, debug.getLevel());
             if (debug.isEnabled()) {
                 debug.log(
-                        "a {} message guarded by a {}, so that no {} is created unless this info - name and level combined - is {}",
+                        "a {} message guarded by a {}, so that no {} is created unless this logger instance - name and level combined - is {}",
                         "long and expensive-to-construct",
                         "level check",
                         "message object",
@@ -143,9 +144,10 @@ class TinylogLoggerTest {
             assertEquals(Level.ERROR, error.getLevel());
             error.atError()
                     .log(ex,
-                            "here the {} call is unnecessary because a Logger instance is immutable, and the instance's log level has and will always be {}",
+                            "here the {} call is unnecessary because a Logger instance is immutable, and the {} instance's log level is already and will always be {}",
                             "atError()",
-                            error.getLevel());
+                            error,
+                            ERROR);
             error.log(ex,
                     "now at Level.ERROR, together with the exception stack trace, logging some items expensive to compute: item1 {}, item2 {}, item3 {}, item4 {}, ...",
                     "i11111",
