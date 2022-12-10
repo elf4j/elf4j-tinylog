@@ -103,6 +103,25 @@ class TinylogLogger implements Logger {
         return levelMap;
     }
 
+    private static Object supply(Object o) {
+        return o instanceof Supplier<?> ? ((Supplier<?>) o).get() : o;
+    }
+
+    @Override
+    public @NonNull String getName() {
+        return name;
+    }
+
+    @Override
+    public @NonNull Level getLevel() {
+        return this.level;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return this.enabled;
+    }
+
     @Override
     public Logger atTrace() {
         return atLevel(TRACE);
@@ -129,37 +148,12 @@ class TinylogLogger implements Logger {
     }
 
     @Override
-    public @NonNull String getName() {
-        return name;
-    }
-
-    @Override
-    public @NonNull Level getLevel() {
-        return this.level;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return this.enabled;
-    }
-
-    @Override
     public void log(Object message) {
         tinylog(null, message, null);
     }
 
     @Override
-    public void log(Supplier<?> message) {
-        tinylog(null, message, null);
-    }
-
-    @Override
     public void log(String message, Object... args) {
-        tinylog(null, message, args);
-    }
-
-    @Override
-    public void log(String message, Supplier<?>... args) {
         tinylog(null, message, args);
     }
 
@@ -174,17 +168,7 @@ class TinylogLogger implements Logger {
     }
 
     @Override
-    public void log(Throwable t, Supplier<?> message) {
-        tinylog(t, message, null);
-    }
-
-    @Override
     public void log(Throwable t, String message, Object... args) {
-        tinylog(t, message, args);
-    }
-
-    @Override
-    public void log(Throwable t, String message, Supplier<?>... args) {
         tinylog(t, message, args);
     }
 
@@ -199,11 +183,9 @@ class TinylogLogger implements Logger {
         if (!this.isEnabled()) {
             return;
         }
-        if (message instanceof Supplier<?>) {
-            message = ((Supplier<?>) message).get();
-        }
-        if (args instanceof Supplier<?>[]) {
-            args = Arrays.stream(((Supplier<?>[]) args)).map(Supplier::get).toArray(Object[]::new);
+        message = supply(message);
+        if (args != null) {
+            args = Arrays.stream(args).map(TinylogLogger::supply).toArray();
         }
         TINYLOG_PROVIDER.log(LOG_CALLER_DEPTH,
                 null,

@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static elf4j.Level.INFO;
@@ -99,11 +100,15 @@ class TinylogLoggerTest {
             Logger info = logger.atInfo();
             info.log("level set omitted here but we know the level is {}", INFO);
             assertEquals(INFO, info.getLevel());
-            info.log("logging message with arguments - arg1 {}, arg2 {}, arg3 {}", "a11111", "a22222", "a33333");
+            info.log("Supplier and Object args can be mixed: Object arg1 {}, Supplier arg2 {}, Object arg3 {}",
+                    "a11111",
+                    (Supplier) () -> "a22222",
+                    "a33333");
             info.atWarn()
                     .log("switched to WARN level on the fly. that is, {} is a different Logger instance from {}",
-                            info.atWarn(),
-                            info);
+                            "`info.atWarn()`",
+                            "`info`");
+            assertNotSame(info, info.atWarn());
             assertEquals(INFO, info.getLevel(), "immutable info's level/state never changes");
 
             Logger debug = logger.atDebug();
@@ -118,7 +123,7 @@ class TinylogLoggerTest {
                         "message object",
                         "enabled by system configuration of the logging provider");
             }
-            debug.log(() -> "alternative to the level guard, using a Supplier<?> function like this should achieve the same goal of avoiding unnecessary message creation, pending quality of the logging provider");
+            debug.log((Supplier) () -> "alternative to the level guard, using a Supplier<?> function like this should achieve the same goal of avoiding unnecessary message creation, pending quality of the logging provider");
         }
     }
 
@@ -129,6 +134,7 @@ class TinylogLoggerTest {
         @Test
         void throwableAndMessageAndArgs() {
             Throwable ex = new Exception("ex message");
+            error.log(ex);
             error.atInfo()
                     .log("{} is an immutable Logger instance whose name is {}, and level is {}",
                             error,
@@ -142,10 +148,10 @@ class TinylogLoggerTest {
                             error.getLevel());
             error.log(ex,
                     "now at Level.ERROR, together with the exception stack trace, logging some items expensive to compute: item1 {}, item2 {}, item3 {}, item4 {}, ...",
-                    () -> "i11111",
-                    () -> "i22222",
-                    () -> "i33333",
-                    () -> Arrays.stream(new Object[] { "i44444" }).collect(Collectors.toList()));
+                    "i11111",
+                    (Supplier) () -> "i22222",
+                    "i33333",
+                    (Supplier) () -> Arrays.stream(new Object[] { "i44444" }).collect(Collectors.toList()));
         }
     }
 }
