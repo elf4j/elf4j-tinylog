@@ -34,6 +34,10 @@ With Maven, in addition to the [ELF4J API](https://github.com/elf4j/elf4j-api#th
 an end-user application would use this provider as a runtime-scope dependency:
 
 ```xml
+<dependency>
+  <groupId>io.github.elf4j</groupId>
+  <artifactId>elf4j-api</artifactId>
+</dependency>
 
 <dependency>
     <groupId>io.github.elf4j</groupId>
