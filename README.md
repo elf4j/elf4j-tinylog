@@ -30,7 +30,8 @@ provider. Because of the ELF4J API, opting for tinylog as the logging implementa
 
 The usual [tinylog configuration](https://tinylog.org/v2/configuration/) applies.
 
-With Maven, an end-user application would use this provider as a dependency of the `runtime` scope:
+With Maven, in addition to the [ELF4J API](https://github.com/elf4j/elf4j-api#the-client-api) compile-scope dependency,
+an end-user application would use this provider as a runtime-scope dependency:
 
 ```xml
 
