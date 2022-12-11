@@ -33,10 +33,11 @@ The usual [tinylog configuration](https://tinylog.org/v2/configuration/) applies
 With Maven, in addition to the [ELF4J API](https://github.com/elf4j/elf4j-api#the-client-api) compile-scope dependency,
 an end-user application would use this provider as a runtime-scope dependency:
 
-```xml
+```html
+
 <dependency>
-  <groupId>io.github.elf4j</groupId>
-  <artifactId>elf4j-api</artifactId>
+    <groupId>io.github.elf4j</groupId>
+    <artifactId>elf4j-api</artifactId>
 </dependency>
 
 <dependency>
