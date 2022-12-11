@@ -2,7 +2,7 @@
 
 # elf4j-tinylog
 
-The [tinylog](https://tinylog.org/v2/) service provider binding for the Easy Logging Facade for
+The [tinylog](https://tinylog.org/v2/) service provider binding for Easy Logging Facade for
 Java ([ELF4J](https://github.com/elf4j/elf4j-api)) SPI
 
 ## User story
