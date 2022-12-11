@@ -2,12 +2,12 @@
 
 # elf4j-tinylog
 
-The [tinylog](https://tinylog.org/v2/) service provider binding for the Easy Logging Facade for
+The [tinylog](https://tinylog.org/v2/) service provider binding for Easy Logging Facade for
 Java ([ELF4J](https://github.com/elf4j/elf4j-api)) SPI
 
 ## User story
 
-As a service provider of the Easy Logging Facade for Java ([ELF4J](https://github.com/elf4j/elf4j-api)) SPI, I want to
+As a service provider of the [ELF4J](https://github.com/elf4j/elf4j-api) SPI, I want to
 bind the logging capabilities of tinylog to the ELF4J client application via
 the [Java Service Provider Interfaces (SPI)](https://docs.oracle.com/javase/tutorial/sound/SPI-intro.html) mechanism, so
 that any application using the ELF4J API for logging can opt to use the tinylog framework at deployment time without
