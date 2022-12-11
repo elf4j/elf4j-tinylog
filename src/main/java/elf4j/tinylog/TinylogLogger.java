@@ -28,6 +28,7 @@ package elf4j.tinylog;
 import elf4j.Level;
 import elf4j.Logger;
 import lombok.NonNull;
+import lombok.ToString;
 import net.jcip.annotations.Immutable;
 import org.tinylog.format.LegacyMessageFormatter;
 import org.tinylog.format.MessageFormatter;
@@ -48,6 +49,7 @@ import static elf4j.Level.*;
  * Adapt tinylog capabilities to cater a ELF4J Logger
  */
 @Immutable
+@ToString
 class TinylogLogger implements Logger {
     private static final Level DEFAULT_LOG_LEVEL = INFO;
     private static final int INSTANCE_CALLER_DEPTH = 4;
