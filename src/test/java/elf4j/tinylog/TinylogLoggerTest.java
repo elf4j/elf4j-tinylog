@@ -110,21 +110,19 @@ class TinylogLoggerTest {
                             "`info.atWarn()`",
                             "`info`");
             assertNotSame(info, info.atWarn());
+            assertEquals(info.getName(), info.atWarn().getName(), "same name, only level is different");
             assertEquals(INFO, info.getLevel(), "immutable info's level never changes");
 
-            Logger debug = logger.atDebug();
-            assertNotSame(logger, debug, "different instances of different levels");
-            assertEquals(logger.getName(), debug.getName(), "same name, only level is different");
-            assertEquals(Level.DEBUG, debug.getLevel());
-            if (debug.isEnabled()) {
-                debug.log(
-                        "a {} message guarded by a {}, so that no {} is created unless this logger instance - name and level combined - is {}",
-                        "long and expensive-to-construct",
-                        "level check",
-                        "message object",
-                        "enabled by system configuration of the logging provider");
+            if (logger.atDebug().isEnabled()) {
+                logger.atDebug()
+                        .log("a {} message guarded by a {}, so that no {} is created unless this logger instance - name and level combined - is {}",
+                                "long and expensive-to-construct",
+                                "level check",
+                                "message object",
+                                "enabled by system configuration of the logging provider");
             }
-            debug.log((Supplier) () -> "alternative to the level guard, using a Supplier<?> function like this should achieve the same goal of avoiding unnecessary message creation, pending quality of the logging provider");
+            logger.atDebug()
+                    .log((Supplier) () -> "alternative to the level guard, using a Supplier<?> function like this should achieve the same goal of avoiding unnecessary message creation, pending quality of the logging provider");
         }
     }
 
