@@ -29,72 +29,91 @@ import elf4j.Level;
 import elf4j.Logger;
 import lombok.NonNull;
 import lombok.ToString;
+import lombok.Value;
 import net.jcip.annotations.Immutable;
 import org.tinylog.format.LegacyMessageFormatter;
 import org.tinylog.format.MessageFormatter;
 import org.tinylog.provider.LoggingProvider;
 import org.tinylog.provider.ProviderRegistry;
-import org.tinylog.runtime.RuntimeProvider;
 
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.Map;
+import javax.annotation.Nullable;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 import static elf4j.Level.*;
 
 /**
- * Adapt tinylog capabilities to cater a ELF4J Logger
+ * Adapt tinylog capabilities to cater an ELF4J Logger
  */
 @Immutable
 @ToString
 class TinylogLogger implements Logger {
     private static final Level DEFAULT_LOG_LEVEL = INFO;
-    private static final int INSTANCE_CALLER_DEPTH = 4;
-    private static final EnumMap<Level, org.tinylog.Level> LEVEL_MAP = setLevelMap();
-    private static final EnumMap<Level, Map<String, TinylogLogger>> LOGGER_CACHE = initLoggerCache();
+    private static final EnumMap<Level, org.tinylog.Level> LEVEL_MAP = newLevelMap();
+    private static final EnumMap<Level, Map<String, TinylogLogger>> LOGGER_CACHE = newLoggerCache();
     private static final int LOG_CALLER_DEPTH = 3;
     private static final MessageFormatter MESSAGE_FORMATTER = new LegacyMessageFormatter();
     private static final LoggingProvider TINYLOG_PROVIDER = ProviderRegistry.getLoggingProvider();
-    private static final org.tinylog.Level TINYLOG_PROVIDER_MINIMUM_LEVEL = TINYLOG_PROVIDER.getMinimumLevel();
-    @NonNull private final String name;
-    @NonNull private final Level level;
     private final boolean enabled;
+    @NonNull private final Level level;
+    @NonNull private final String name;
 
     private TinylogLogger(@NonNull String name, @NonNull Level level) {
         this.name = name;
         this.level = level;
-        this.enabled =
-                this.level != OFF && LEVEL_MAP.get(this.level).ordinal() >= TINYLOG_PROVIDER_MINIMUM_LEVEL.ordinal();
+        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+        this.enabled = this.level != OFF && TINYLOG_PROVIDER.isEnabled(
+                1 + (constructionPurpose(stackTrace) == ConstructionPurpose.INITIAL_INSTANCE ?
+                        getInitialLoggerInstanceCallerIndex(stackTrace) :
+                        getNewLevelLoggerInstanceCallerIndex(stackTrace)), null, LEVEL_MAP.get(this.level));
+    }
+
+    static void evictCachedLoggers(@NonNull String loggerNameStartPattern) {
+        LOGGER_CACHE.values().forEach(cache -> cache.keySet().removeIf(k -> k.startsWith(loggerNameStartPattern)));
+    }
+
+    static void evictCachedLoggers() {
+        LOGGER_CACHE.values().forEach(Map::clear);
     }
 
     static TinylogLogger instance() {
-        return getLogger(RuntimeProvider.getCallerClassName(INSTANCE_CALLER_DEPTH), DEFAULT_LOG_LEVEL);
+        return instance((String) null);
     }
 
     static TinylogLogger instance(Class<?> clazz) {
-        return getLogger(clazz == null ? RuntimeProvider.getCallerClassName(INSTANCE_CALLER_DEPTH) : clazz.getName(),
-                DEFAULT_LOG_LEVEL);
+        return clazz == null ? instance() : instance(clazz.getName());
     }
 
     static TinylogLogger instance(String name) {
-        return getLogger(name == null ? RuntimeProvider.getCallerClassName(INSTANCE_CALLER_DEPTH) : name,
+        return getLogger(
+                name == null ? CallStack.mostRecentLoggerApiCallerFqcn(Thread.currentThread().getStackTrace()) : name,
                 DEFAULT_LOG_LEVEL);
     }
 
+    private static ConstructionPurpose constructionPurpose(StackTraceElement[] constructorStackTrace) {
+        return initialLoggerInstanceCallerIndex(constructorStackTrace).isPresent() ?
+                ConstructionPurpose.INITIAL_INSTANCE : ConstructionPurpose.NEW_LEVEL;
+    }
+
+    private static int getInitialLoggerInstanceCallerIndex(StackTraceElement[] stackTrace) {
+        return initialLoggerInstanceCallerIndex(stackTrace).orElseThrow(NoSuchElementException::new);
+    }
+
     private static TinylogLogger getLogger(@NonNull String name, @NonNull Level level) {
-        return LOGGER_CACHE.get(level).computeIfAbsent(name, k -> new TinylogLogger(k, level));
+        return LOGGER_CACHE.get(level).computeIfAbsent(name, key -> new TinylogLogger(key, level));
     }
 
-    private static EnumMap<Level, Map<String, TinylogLogger>> initLoggerCache() {
-        EnumMap<Level, Map<String, TinylogLogger>> loggerCache = new EnumMap<>(Level.class);
-        EnumSet.allOf(Level.class).forEach(level -> loggerCache.put(level, new ConcurrentHashMap<>()));
-        return loggerCache;
+    private static int getNewLevelLoggerInstanceCallerIndex(StackTraceElement[] stackTrace) {
+        return CallStack.indexToMostRecentCallerOf(TinylogLogger.class, "atLevel", stackTrace)
+                .orElseThrow(NoSuchElementException::new);
     }
 
-    private static EnumMap<Level, org.tinylog.Level> setLevelMap() {
+    private static Optional<Integer> initialLoggerInstanceCallerIndex(StackTraceElement[] constructorStackTrace) {
+        return CallStack.indexToMostRecentCallerOf(Logger.class, "instance", constructorStackTrace);
+    }
+
+    private static @NonNull EnumMap<Level, org.tinylog.Level> newLevelMap() {
         EnumMap<Level, org.tinylog.Level> levelMap = new EnumMap<>(Level.class);
         levelMap.put(TRACE, org.tinylog.Level.TRACE);
         levelMap.put(DEBUG, org.tinylog.Level.DEBUG);
@@ -105,28 +124,14 @@ class TinylogLogger implements Logger {
         return levelMap;
     }
 
-    private static Object supply(Object o) {
+    private static @NonNull EnumMap<Level, Map<String, TinylogLogger>> newLoggerCache() {
+        EnumMap<Level, Map<String, TinylogLogger>> loggerCache = new EnumMap<>(Level.class);
+        EnumSet.allOf(Level.class).forEach(level -> loggerCache.put(level, new ConcurrentHashMap<>()));
+        return loggerCache;
+    }
+
+    private static Object resolve(Object o) {
         return o instanceof Supplier<?> ? ((Supplier<?>) o).get() : o;
-    }
-
-    @Override
-    public @NonNull String getName() {
-        return name;
-    }
-
-    @Override
-    public @NonNull Level getLevel() {
-        return this.level;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return this.enabled;
-    }
-
-    @Override
-    public Logger atTrace() {
-        return atLevel(TRACE);
     }
 
     @Override
@@ -135,8 +140,18 @@ class TinylogLogger implements Logger {
     }
 
     @Override
+    public Logger atError() {
+        return atLevel(ERROR);
+    }
+
+    @Override
     public Logger atInfo() {
         return atLevel(INFO);
+    }
+
+    @Override
+    public Logger atTrace() {
+        return atLevel(TRACE);
     }
 
     @Override
@@ -145,8 +160,18 @@ class TinylogLogger implements Logger {
     }
 
     @Override
-    public Logger atError() {
-        return atLevel(ERROR);
+    public @NonNull Level getLevel() {
+        return this.level;
+    }
+
+    @Override
+    public @NonNull String getName() {
+        return name;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return this.enabled;
     }
 
     @Override
@@ -181,20 +206,83 @@ class TinylogLogger implements Logger {
         return getLogger(this.name, level);
     }
 
-    private void tinylog(Throwable t, Object message, Object[] args) {
+    private void tinylog(@Nullable final Throwable t, @Nullable final Object message, @Nullable final Object[] args) {
         if (!this.isEnabled()) {
             return;
-        }
-        message = supply(message);
-        if (args != null) {
-            args = Arrays.stream(args).map(TinylogLogger::supply).toArray();
         }
         TINYLOG_PROVIDER.log(LOG_CALLER_DEPTH,
                 null,
                 LEVEL_MAP.get(this.level),
                 t,
                 args == null ? null : MESSAGE_FORMATTER,
-                message,
-                args);
+                resolve(message),
+                args == null ? null : Arrays.stream(args).map(TinylogLogger::resolve).toArray());
+    }
+
+    private enum ConstructionPurpose {
+        INITIAL_INSTANCE, NEW_LEVEL
+    }
+
+    private static class CallStack {
+
+        static Optional<Integer> indexToMostRecentCallerOf(@NonNull Class<?> calleeClass,
+                @NonNull String calleeMethodName,
+                StackTraceElement @NonNull [] stackTrace) {
+            return mostRecentCallerOf(calleeClass,
+                    calleeMethodName,
+                    stackTrace).map(TraceFrame::getStackTraceElementIndex);
+        }
+
+        static Optional<TraceFrame> mostRecentCallerOf(@NonNull Class<?> calleeClass,
+                StackTraceElement @NonNull [] stackTrace) {
+            String calleeClassName = calleeClass.getName();
+            int i = 0;
+            for (; i < stackTrace.length; i++) {
+                if (stackTrace[i].getClassName().equals(calleeClassName)) {
+                    break;
+                }
+            }
+            for (i++; i < stackTrace.length; i++) {
+                if (!stackTrace[i].getClassName().equals(calleeClassName)) {
+                    return Optional.of(new TraceFrame(stackTrace, i));
+                }
+            }
+            return Optional.empty();
+        }
+
+        static Optional<TraceFrame> mostRecentCallerOf(@NonNull Class<?> calleeClass,
+                @NonNull String calleeMethodName,
+                StackTraceElement @NonNull [] stackTrace) {
+            String calleeClassName = calleeClass.getName();
+            int i = 0;
+            for (; i < stackTrace.length; i++) {
+                if (stackTrace[i].getClassName().equals(calleeClassName) && stackTrace[i].getMethodName()
+                        .equals(calleeMethodName)) {
+                    break;
+                }
+            }
+            for (i++; i < stackTrace.length; i++) {
+                if (!stackTrace[i].getClassName().equals(calleeClassName)) {
+                    return Optional.of(new TraceFrame(stackTrace, i));
+                }
+            }
+            return Optional.empty();
+        }
+
+        static @NonNull String mostRecentLoggerApiCallerFqcn(StackTraceElement @NonNull [] stackTrace) {
+            return mostRecentCallerOf(Logger.class, stackTrace).orElseThrow(NoSuchElementException::new)
+                    .getStackTraceElement()
+                    .getClassName();
+        }
+
+        @Value
+        private static class TraceFrame {
+            StackTraceElement[] stackTrace;
+            int stackTraceElementIndex;
+
+            StackTraceElement getStackTraceElement() {
+                return stackTrace[stackTraceElementIndex];
+            }
+        }
     }
 }

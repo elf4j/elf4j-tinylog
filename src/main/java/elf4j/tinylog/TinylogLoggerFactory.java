@@ -31,12 +31,12 @@ import elf4j.spi.LoggerFactory;
 import javax.annotation.Nullable;
 
 /**
- * Service Provider Interface implementation.
- * <p>
- * Refer to <a href="https://docs.oracle.com/javase/tutorial/sound/SPI-intro.html">Introduction to the Service Provider
- * Interfaces</a>
+ * Provider class implementation of ELF4J SPI, loadable via {@link java.util.ServiceLoader}.
+ *
+ * @see <a href="https://docs.oracle.com/javase/7/docs/api/java/util/ServiceLoader.html">Javadoc of
+ *         ServiceLoader</a>
  */
-public class TinylogLoggerFactory implements LoggerFactory {
+public final class TinylogLoggerFactory implements LoggerFactory {
     @Override
     public Logger logger() {
         return TinylogLogger.instance();

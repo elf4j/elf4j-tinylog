@@ -24,3 +24,4 @@
 #
 
 elf4j.tinylog.TinylogLoggerFactory
+#elf4j.util.NoopLoggerFactory
