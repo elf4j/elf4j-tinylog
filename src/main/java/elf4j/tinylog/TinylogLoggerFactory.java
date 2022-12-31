@@ -25,10 +25,21 @@
 
 package elf4j.tinylog;
 
+import elf4j.Level;
 import elf4j.Logger;
 import elf4j.spi.LoggerFactory;
+import lombok.NonNull;
+import org.tinylog.provider.LoggingProvider;
+import org.tinylog.provider.ProviderRegistry;
 
 import javax.annotation.Nullable;
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static elf4j.Level.*;
 
 /**
  * Provider class implementation of ELF4J SPI, loadable via {@link java.util.ServiceLoader}.
@@ -37,18 +48,76 @@ import javax.annotation.Nullable;
  *         ServiceLoader</a>
  */
 public final class TinylogLoggerFactory implements LoggerFactory {
+    static final EnumMap<Level, org.tinylog.Level> LEVEL_MAP = newLevelMap();
+    private static final Level DEFAULT_LOG_LEVEL = INFO;
+    private final EnumMap<Level, Map<String, TinylogLogger>> loggerCache = newLoggerCache();
+    private final LoggingProvider loggingProvider = ProviderRegistry.getLoggingProvider();
+
+    private static @NonNull String defaultLoggerName() {
+        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+        int i = 0;
+        for (; i < stackTraceElements.length; i++) {
+            if (stackTraceElements[i].getClassName().equals(Logger.class.getName())) {
+                break;
+            }
+        }
+        for (i++; i < stackTraceElements.length; i++) {
+            if (!stackTraceElements[i].getClassName().equals(Logger.class.getName())) {
+                return stackTraceElements[i].getClassName();
+            }
+        }
+        throw new NoSuchElementException();
+    }
+
+    private static @NonNull EnumMap<Level, org.tinylog.Level> newLevelMap() {
+        EnumMap<Level, org.tinylog.Level> levelMap = new EnumMap<>(Level.class);
+        levelMap.put(TRACE, org.tinylog.Level.TRACE);
+        levelMap.put(DEBUG, org.tinylog.Level.DEBUG);
+        levelMap.put(INFO, org.tinylog.Level.INFO);
+        levelMap.put(WARN, org.tinylog.Level.WARN);
+        levelMap.put(ERROR, org.tinylog.Level.ERROR);
+        levelMap.put(OFF, org.tinylog.Level.OFF);
+        return levelMap;
+    }
+
+    private static @NonNull EnumMap<Level, Map<String, TinylogLogger>> newLoggerCache() {
+        EnumMap<Level, Map<String, TinylogLogger>> loggerCache = new EnumMap<>(Level.class);
+        EnumSet.allOf(Level.class).forEach(level -> loggerCache.put(level, new ConcurrentHashMap<>()));
+        return loggerCache;
+    }
+
+    void evictCachedLoggers() {
+        loggerCache.values().forEach(Map::clear);
+    }
+
+    void evictCachedLoggers(@NonNull String loggerNameStartPattern) {
+        loggerCache.values().forEach(cache -> cache.keySet().removeIf(key -> key.startsWith(loggerNameStartPattern)));
+    }
+
+    private TinylogLogger fromCache(@NonNull Level level, @NonNull String name) {
+        return loggerCache.get(level).computeIfAbsent(name, key -> new TinylogLogger(key, level, this));
+    }
+
+    TinylogLogger getLogger(@NonNull String name, @NonNull Level level) {
+        return fromCache(level, name);
+    }
+
+    LoggingProvider getLoggingProvider() {
+        return loggingProvider;
+    }
+
     @Override
     public Logger logger() {
-        return TinylogLogger.instance();
+        return logger((String) null);
     }
 
     @Override
     public Logger logger(@Nullable String name) {
-        return TinylogLogger.instance(name);
+        return getLogger((name == null) ? defaultLoggerName() : name, DEFAULT_LOG_LEVEL);
     }
 
     @Override
     public Logger logger(@Nullable Class<?> clazz) {
-        return TinylogLogger.instance(clazz);
+        return logger(clazz == null ? null : clazz.getName());
     }
 }
