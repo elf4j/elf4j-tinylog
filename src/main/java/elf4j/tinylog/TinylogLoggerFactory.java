@@ -50,8 +50,8 @@ import static elf4j.Level.*;
 public final class TinylogLoggerFactory implements LoggerFactory {
     static final EnumMap<Level, org.tinylog.Level> LEVEL_MAP = newLevelMap();
     private static final Level DEFAULT_LOG_LEVEL = INFO;
-    private static final int NEW_INSTANCE_CALLER_DEPTH = 4;
-    private static final int NEW_LEVEL_CALLER_DEPTH = 4;
+    private static final int NEW_INSTANCE_CALLER_DEPTH = 7;
+    private static final int NEW_LEVEL_CALLER_DEPTH = 7;
     private final EnumMap<Level, Map<String, TinylogLogger>> loggerCache = newLoggerCache();
     private final LoggingProvider loggingProvider;
     private final org.tinylog.Level minimumTinyLogLevel;
@@ -104,15 +104,16 @@ public final class TinylogLoggerFactory implements LoggerFactory {
     TinylogLogger getLogger(final String name, final Level level) {
         String eName = name == null ? defaultLoggerName(Thread.currentThread().getStackTrace()) : name;
         Level eLevel = level == null ? DEFAULT_LOG_LEVEL : level;
-        TinylogLogger cached = loggerCache.get(eLevel).get(eName);
-        if (cached != null) {
-            return cached;
-        }
-        org.tinylog.Level tLevel = LEVEL_MAP.get(eLevel);
-        boolean enabled =
-                eLevel != OFF && tLevel.ordinal() >= minimumTinyLogLevel.ordinal() && loggingProvider.isEnabled(
-                        level == null ? NEW_INSTANCE_CALLER_DEPTH : NEW_LEVEL_CALLER_DEPTH, null, tLevel);
-        return loggerCache.get(eLevel).computeIfAbsent(eName, key -> new TinylogLogger(eName, eLevel, enabled, this));
+        return loggerCache.get(eLevel)
+                .computeIfAbsent(eName,
+                        key -> new TinylogLogger(eName,
+                                eLevel,
+                                eLevel != OFF && LEVEL_MAP.get(eLevel).ordinal() >= minimumTinyLogLevel.ordinal()
+                                        && loggingProvider.isEnabled(
+                                        level == null ? NEW_INSTANCE_CALLER_DEPTH : NEW_LEVEL_CALLER_DEPTH,
+                                        null,
+                                        LEVEL_MAP.get(eLevel)),
+                                this));
     }
 
     LoggingProvider getLoggingProvider() {

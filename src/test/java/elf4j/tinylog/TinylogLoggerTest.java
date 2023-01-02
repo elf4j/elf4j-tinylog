@@ -41,14 +41,16 @@ import static org.junit.jupiter.api.Assertions.*;
 class TinylogLoggerTest {
 
     @Nested
-    class name {
-
+    class loggerName {
         @Test
         void optToSupplyCallerClassNameForNullOrNoargInstance() {
+            Logger localLogger = Logger.instance();
             String thisClassName = this.getClass().getName();
-            assertTrue(thisClassName.contains(Logger.instance().getName()));
-            assertTrue(thisClassName.contains(Logger.instance((String) null).getName()));
-            assertTrue(thisClassName.contains(Logger.instance((Class<?>) null).getName()));
+            localLogger.log("method local logger {} in class {}", localLogger, thisClassName);
+
+            assertSame(localLogger, Logger.instance((String) null));
+            assertSame(localLogger, Logger.instance((Class<?>) null));
+            assertTrue(localLogger.getName().contains(thisClassName));
         }
 
         @Test
@@ -61,8 +63,8 @@ class TinylogLoggerTest {
     }
 
     @Nested
-    class placeholder {
-        Logger logger = Logger.instance(placeholder.class);
+    class Placeholder {
+        Logger logger = Logger.instance(Placeholder.class);
 
         @Test
         void defaultNameAndLevel() {
