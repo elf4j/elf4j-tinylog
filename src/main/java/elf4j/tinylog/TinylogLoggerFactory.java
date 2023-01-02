@@ -63,14 +63,16 @@ public final class TinylogLoggerFactory implements LoggerFactory {
 
     private static @NonNull String defaultLoggerName(StackTraceElement[] stackTraceElements) {
         int i = 0;
+        String loggerInterfaceName = Logger.class.getName();
         for (; i < stackTraceElements.length; i++) {
-            if (stackTraceElements[i].getClassName().equals(Logger.class.getName())) {
+            if (stackTraceElements[i].getClassName().equals(loggerInterfaceName)) {
                 break;
             }
         }
         for (i++; i < stackTraceElements.length; i++) {
-            if (!stackTraceElements[i].getClassName().equals(Logger.class.getName())) {
-                return stackTraceElements[i].getClassName();
+            StackTraceElement caller = stackTraceElements[i];
+            if (!caller.getClassName().equals(loggerInterfaceName)) {
+                return caller.getClassName();
             }
         }
         throw new NoSuchElementException();
@@ -105,10 +107,12 @@ public final class TinylogLoggerFactory implements LoggerFactory {
         String eName = name == null ? defaultLoggerName(Thread.currentThread().getStackTrace()) : name;
         Level eLevel = level == null ? DEFAULT_LOG_LEVEL : level;
         return loggerCache.get(eLevel).computeIfAbsent(eName, key -> {
-            boolean enabled = eLevel != OFF && LEVEL_MAP.get(eLevel).ordinal() >= minimumTinyLogLevel.ordinal()
-                    && loggingProvider.isEnabled(level == null ? NEW_INSTANCE_CALLER_DEPTH : NEW_LEVEL_CALLER_DEPTH,
-                    null,
-                    LEVEL_MAP.get(eLevel));
+            org.tinylog.Level tLevel = LEVEL_MAP.get(eLevel);
+            boolean enabled =
+                    eLevel != OFF && tLevel.ordinal() >= minimumTinyLogLevel.ordinal() && loggingProvider.isEnabled(
+                            level == null ? NEW_INSTANCE_CALLER_DEPTH : NEW_LEVEL_CALLER_DEPTH,
+                            null,
+                            tLevel);
             return new TinylogLogger(eName, eLevel, enabled, this);
         });
     }
