@@ -60,9 +60,9 @@ final class TinylogLogger implements Logger {
             @NonNull TinylogLoggerFactory tinylogLoggerFactory) {
         this.name = name;
         this.level = level;
+        this.enabled = enabled;
         this.tinylogLoggerFactory = tinylogLoggerFactory;
         this.loggingProvider = tinylogLoggerFactory.getLoggingProvider();
-        this.enabled = enabled;
     }
 
     private static Object resolve(Object o) {
