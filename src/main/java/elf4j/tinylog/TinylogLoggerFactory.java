@@ -112,7 +112,7 @@ public final class TinylogLoggerFactory implements LoggerFactory {
         boolean enabled =
                 eLevel != OFF && tLevel.ordinal() >= minimumTinyLogLevel.ordinal() && loggingProvider.isEnabled(
                         level == null ? NEW_INSTANCE_CALLER_DEPTH : NEW_LEVEL_CALLER_DEPTH, null, tLevel);
-        return loggerCache.get(eLevel).computeIfAbsent(eName, key -> new TinylogLogger(key, eLevel, enabled, this));
+        return loggerCache.get(eLevel).computeIfAbsent(eName, key -> new TinylogLogger(eName, eLevel, enabled, this));
     }
 
     LoggingProvider getLoggingProvider() {
