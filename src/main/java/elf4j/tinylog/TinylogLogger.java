@@ -46,7 +46,7 @@ import static elf4j.Level.*;
 @Immutable
 @ToString
 final class TinylogLogger implements Logger {
-    private static final int EXTERNAL_LOG_DEPTH = 3;
+    private static final int LOG_CALLER_DEPTH = 3;
     private static final MessageFormatter MESSAGE_FORMATTER = new LegacyMessageFormatter();
     private final boolean enabled;
     @NonNull private final Level level;
@@ -149,7 +149,7 @@ final class TinylogLogger implements Logger {
         if (!this.isEnabled()) {
             return;
         }
-        loggingProvider.log(EXTERNAL_LOG_DEPTH,
+        loggingProvider.log(LOG_CALLER_DEPTH,
                 null,
                 TinylogLoggerFactory.LEVEL_MAP.get(this.level),
                 t,
