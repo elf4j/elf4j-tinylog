@@ -29,7 +29,7 @@ import elf4j.Level;
 import elf4j.Logger;
 import lombok.NonNull;
 import lombok.ToString;
-import net.jcip.annotations.ThreadSafe;
+import net.jcip.annotations.Immutable;
 import org.tinylog.format.LegacyMessageFormatter;
 import org.tinylog.format.MessageFormatter;
 import org.tinylog.provider.LoggingProvider;
@@ -43,26 +43,26 @@ import static elf4j.Level.*;
 /**
  * Adapt tinylog capabilities to cater an ELF4J Logger
  */
-@ThreadSafe
+@Immutable
 @ToString
 final class TinylogLogger implements Logger {
-    private static final int EXTERNAL_CHECK_DEPTH = 3;
     private static final int EXTERNAL_LOG_DEPTH = 3;
-    private static final int INTERNAL_CHECK_DEPTH = 4;
     private static final MessageFormatter MESSAGE_FORMATTER = new LegacyMessageFormatter();
-    @NonNull private final org.tinylog.Level globalMminimumLevel;
+    private final boolean enabled;
     @NonNull private final Level level;
     @NonNull private final LoggingProvider loggingProvider;
     @NonNull private final String name;
     @NonNull private final TinylogLoggerFactory tinylogLoggerFactory;
-    private volatile Boolean enabled;
 
-    TinylogLogger(@NonNull String name, @NonNull Level level, @NonNull TinylogLoggerFactory tinylogLoggerFactory) {
+    TinylogLogger(@NonNull String name,
+            @NonNull Level level,
+            boolean enabled,
+            @NonNull TinylogLoggerFactory tinylogLoggerFactory) {
         this.name = name;
         this.level = level;
         this.tinylogLoggerFactory = tinylogLoggerFactory;
         this.loggingProvider = tinylogLoggerFactory.getLoggingProvider();
-        this.globalMminimumLevel = this.loggingProvider.getMinimumLevel();
+        this.enabled = enabled;
     }
 
     private static Object resolve(Object o) {
@@ -106,7 +106,7 @@ final class TinylogLogger implements Logger {
 
     @Override
     public boolean isEnabled() {
-        return checkEnabled(EXTERNAL_CHECK_DEPTH);
+        return this.enabled;
     }
 
     @Override
@@ -141,24 +141,12 @@ final class TinylogLogger implements Logger {
         return tinylogLoggerFactory.getLogger(this.name, level);
     }
 
-    private boolean checkEnabled(int apiCallerDepth) {
-        if (this.enabled == null) {
-            org.tinylog.Level tLevel = TinylogLoggerFactory.LEVEL_MAP.get(this.level);
-            this.enabled =
-                    this.level != OFF && tLevel.ordinal() >= globalMminimumLevel.ordinal() && loggingProvider.isEnabled(
-                            apiCallerDepth,
-                            null,
-                            tLevel);
-        }
-        return this.enabled;
-    }
-
     @NonNull TinylogLoggerFactory getTinylogLoggerFactory() {
         return tinylogLoggerFactory;
     }
 
     private void tinylog(@Nullable final Throwable t, @Nullable final Object message, @Nullable final Object[] args) {
-        if (!this.checkEnabled(INTERNAL_CHECK_DEPTH)) {
+        if (!this.isEnabled()) {
             return;
         }
         loggingProvider.log(EXTERNAL_LOG_DEPTH,

@@ -50,11 +50,18 @@ import static elf4j.Level.*;
 public final class TinylogLoggerFactory implements LoggerFactory {
     static final EnumMap<Level, org.tinylog.Level> LEVEL_MAP = newLevelMap();
     private static final Level DEFAULT_LOG_LEVEL = INFO;
+    private static final int NEW_INSTANCE_CALLER_DEPTH = 4;
+    private static final int NEW_LEVEL_CALLER_DEPTH = 4;
     private final EnumMap<Level, Map<String, TinylogLogger>> loggerCache = newLoggerCache();
-    private final LoggingProvider loggingProvider = ProviderRegistry.getLoggingProvider();
+    private final LoggingProvider loggingProvider;
+    private final org.tinylog.Level minimumTinyLogLevel;
 
-    private static @NonNull String defaultLoggerName() {
-        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+    public TinylogLoggerFactory() {
+        this.loggingProvider = ProviderRegistry.getLoggingProvider();
+        this.minimumTinyLogLevel = this.loggingProvider.getMinimumLevel();
+    }
+
+    private static @NonNull String defaultLoggerName(StackTraceElement[] stackTraceElements) {
         int i = 0;
         for (; i < stackTraceElements.length; i++) {
             if (stackTraceElements[i].getClassName().equals(Logger.class.getName())) {
@@ -94,12 +101,18 @@ public final class TinylogLoggerFactory implements LoggerFactory {
         loggerCache.values().forEach(cache -> cache.keySet().removeIf(key -> key.startsWith(loggerNameStartPattern)));
     }
 
-    private TinylogLogger fromCache(@NonNull Level level, @NonNull String name) {
-        return loggerCache.get(level).computeIfAbsent(name, key -> new TinylogLogger(key, level, this));
-    }
-
-    TinylogLogger getLogger(@NonNull String name, @NonNull Level level) {
-        return fromCache(level, name);
+    TinylogLogger getLogger(final String name, final Level level) {
+        String eName = name == null ? defaultLoggerName(Thread.currentThread().getStackTrace()) : name;
+        Level eLevel = level == null ? DEFAULT_LOG_LEVEL : level;
+        TinylogLogger cached = loggerCache.get(eLevel).get(eName);
+        if (cached != null) {
+            return cached;
+        }
+        org.tinylog.Level tLevel = LEVEL_MAP.get(eLevel);
+        boolean enabled =
+                eLevel != OFF && tLevel.ordinal() >= minimumTinyLogLevel.ordinal() && loggingProvider.isEnabled(
+                        level == null ? NEW_INSTANCE_CALLER_DEPTH : NEW_LEVEL_CALLER_DEPTH, null, tLevel);
+        return loggerCache.get(eLevel).computeIfAbsent(eName, key -> new TinylogLogger(key, eLevel, enabled, this));
     }
 
     LoggingProvider getLoggingProvider() {
@@ -108,16 +121,16 @@ public final class TinylogLoggerFactory implements LoggerFactory {
 
     @Override
     public Logger logger() {
-        return logger((String) null);
+        return getLogger(null, null);
     }
 
     @Override
     public Logger logger(@Nullable String name) {
-        return getLogger((name == null) ? defaultLoggerName() : name, DEFAULT_LOG_LEVEL);
+        return getLogger(name, null);
     }
 
     @Override
     public Logger logger(@Nullable Class<?> clazz) {
-        return logger(clazz == null ? null : clazz.getName());
+        return getLogger(clazz == null ? null : clazz.getName(), null);
     }
 }
