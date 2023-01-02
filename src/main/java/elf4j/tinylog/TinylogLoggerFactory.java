@@ -104,16 +104,13 @@ public final class TinylogLoggerFactory implements LoggerFactory {
     TinylogLogger getLogger(final String name, final Level level) {
         String eName = name == null ? defaultLoggerName(Thread.currentThread().getStackTrace()) : name;
         Level eLevel = level == null ? DEFAULT_LOG_LEVEL : level;
-        return loggerCache.get(eLevel)
-                .computeIfAbsent(eName,
-                        key -> new TinylogLogger(eName,
-                                eLevel,
-                                eLevel != OFF && LEVEL_MAP.get(eLevel).ordinal() >= minimumTinyLogLevel.ordinal()
-                                        && loggingProvider.isEnabled(
-                                        level == null ? NEW_INSTANCE_CALLER_DEPTH : NEW_LEVEL_CALLER_DEPTH,
-                                        null,
-                                        LEVEL_MAP.get(eLevel)),
-                                this));
+        return loggerCache.get(eLevel).computeIfAbsent(eName, key -> {
+            boolean enabled = eLevel != OFF && LEVEL_MAP.get(eLevel).ordinal() >= minimumTinyLogLevel.ordinal()
+                    && loggingProvider.isEnabled(level == null ? NEW_INSTANCE_CALLER_DEPTH : NEW_LEVEL_CALLER_DEPTH,
+                    null,
+                    LEVEL_MAP.get(eLevel));
+            return new TinylogLogger(eName, eLevel, enabled, this);
+        });
     }
 
     LoggingProvider getLoggingProvider() {
