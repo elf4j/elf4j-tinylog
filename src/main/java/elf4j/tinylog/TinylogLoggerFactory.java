@@ -99,7 +99,9 @@ public final class TinylogLoggerFactory implements LoggerFactory {
     }
 
     void evictCachedLoggers(@NonNull String loggerNameStartPattern) {
-        loggerCache.values().forEach(cache -> cache.keySet().removeIf(key -> key.startsWith(loggerNameStartPattern)));
+        loggerCache.values()
+                .forEach(levelOfLoggers -> levelOfLoggers.keySet()
+                        .removeIf(loggerName -> loggerName.startsWith(loggerNameStartPattern)));
     }
 
     TinylogLogger getLogger(final String name, final Level level) {
