@@ -28,12 +28,12 @@ import elf4j.Level;
 import elf4j.Logger;
 import lombok.NonNull;
 import lombok.ToString;
-import net.jcip.annotations.Immutable;
 import org.tinylog.format.LegacyMessageFormatter;
 import org.tinylog.format.MessageFormatter;
 import org.tinylog.provider.LoggingProvider;
 
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
 import java.util.Arrays;
 import java.util.function.Supplier;
 

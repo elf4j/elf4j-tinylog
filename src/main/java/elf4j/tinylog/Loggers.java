@@ -26,14 +26,24 @@ package elf4j.tinylog;
 
 import elf4j.Logger;
 
+/**
+ * Manages loggers at runtime
+ */
 public class Loggers {
     private Loggers() {
     }
 
+    /**
+     * Resynchronize configurations on all loggers
+     */
     public static void renew() {
         ((TinylogLogger) Logger.instance()).getTinylogLoggerFactory().evictCachedLoggers();
     }
 
+    /**
+     * @param loggerNameStartPattern name start pattern of loggers whose configurations will be resynchronized to the
+     *                               latest runtime configuration
+     */
     public static void renew(String loggerNameStartPattern) {
         ((TinylogLogger) Logger.instance()).getTinylogLoggerFactory().evictCachedLoggers(loggerNameStartPattern);
     }

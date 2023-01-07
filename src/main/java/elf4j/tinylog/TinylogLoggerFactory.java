@@ -55,6 +55,9 @@ public final class TinylogLoggerFactory implements LoggerFactory {
     private final LoggingProvider loggingProvider;
     private final org.tinylog.Level minimumTinyLogLevel;
 
+    /**
+     * Default constructor required by {@link java.util.ServiceLoader}
+     */
     public TinylogLoggerFactory() {
         this.loggingProvider = ProviderRegistry.getLoggingProvider();
         this.minimumTinyLogLevel = this.loggingProvider.getMinimumLevel();

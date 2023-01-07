@@ -39,30 +39,15 @@ import static org.junit.jupiter.api.Assertions.*;
 class TinylogLoggerTest {
 
     @Nested
-    class loggerName {
-        @Test
-        void optToSupplyCallerClassNameForNullOrNoargInstance() {
-            Logger localLogger = Logger.instance();
-            String thisClassName = this.getClass().getName();
-            localLogger.log("method local logger {} in class {}", localLogger, thisClassName);
-
-            assertSame(localLogger, Logger.instance((String) null));
-            assertSame(localLogger, Logger.instance((Class<?>) null));
-            assertTrue(localLogger.getName().contains(thisClassName));
-        }
-
-        @Test
-        void blankOrEmptyNamesStayAsIs() {
-            String blank = "   ";
-            assertEquals(blank, Logger.instance(blank).getName());
-            String empty = "";
-            assertEquals("", Logger.instance(empty).getName());
-        }
-    }
-
-    @Nested
     class Placeholder {
         Logger logger = Logger.instance(Placeholder.class);
+
+        @Test
+        void cacheLoggerWithSameNameAndLevel() {
+            Logger error = logger.atError();
+            Logger error2 = logger.atError();
+            assertSame(error, error2, "logger instance of the same name and level is cached and re-used");
+        }
 
         @Test
         void defaultNameAndLevel() {
@@ -72,13 +57,6 @@ class TinylogLoggerTest {
                     logger.getName(),
                     logger.getLevel());
             assertEquals(INFO, logger.getLevel());
-        }
-
-        @Test
-        void cacheLoggerWithSameNameAndLevel() {
-            Logger error = logger.atError();
-            Logger error2 = logger.atError();
-            assertSame(error, error2, "logger instance of the same name and level is cached and re-used");
         }
 
         @Test
@@ -152,6 +130,28 @@ class TinylogLoggerTest {
                     (Supplier) () -> "i22222",
                     "i33333",
                     (Supplier) () -> Arrays.stream(new Object[] { "i44444" }).collect(Collectors.toList()));
+        }
+    }
+
+    @Nested
+    class loggerName {
+        @Test
+        void blankOrEmptyNamesStayAsIs() {
+            String blank = "   ";
+            assertEquals(blank, Logger.instance(blank).getName());
+            String empty = "";
+            assertEquals("", Logger.instance(empty).getName());
+        }
+
+        @Test
+        void optToSupplyCallerClassNameForNullOrNoargInstance() {
+            Logger localLogger = Logger.instance();
+            String thisClassName = this.getClass().getName();
+            localLogger.log("method local logger {} in class {}", localLogger, thisClassName);
+
+            assertSame(localLogger, Logger.instance((String) null));
+            assertSame(localLogger, Logger.instance((Class<?>) null));
+            assertTrue(localLogger.getName().contains(thisClassName));
         }
     }
 }
