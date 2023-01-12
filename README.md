@@ -48,4 +48,5 @@ an end-user application would use this provider as a runtime-scope dependency:
 ```
 
 Note: Only one logging provider such as this should be in effect at run-time. If different providers end up in the final
-build of an application, the "elf4j.logger.factory.fqcn" system property have to be used to select the desired provider.
+build of an application, somehow, then the `elf4j.logger.factory.fqcn` system property will have to be used to select
+the desired provider.
