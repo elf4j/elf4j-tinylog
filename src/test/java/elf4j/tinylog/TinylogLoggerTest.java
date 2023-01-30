@@ -125,11 +125,13 @@ class TinylogLoggerTest {
                             error,
                             ERROR);
             error.log(ex,
-                    "now at Level.ERROR, together with the exception stack trace, logging some items expensive to compute: item1 {}, item2 {}, item3 {}, item4 {}, ...",
-                    "i11111",
-                    (Supplier) () -> "i22222",
-                    "i33333",
-                    (Supplier) () -> Arrays.stream(new Object[] { "i44444" }).collect(Collectors.toList()));
+                    "now at Level.ERROR, together with the exception stack trace, logging some items expensive to compute: 1. {} 2. {} 3. {} 4. {}",
+                    "usually an Object-type argument's Object.toString result is used for the final log message, except that...",
+                    (Supplier) () -> "the Supplier.get result will be used instead for a Supplier-type argument",
+                    "this allows for a mixture of Supplier and other Object types of arguments to compute to a sensible final log message",
+                    (Supplier) () -> Arrays.stream(new Object[] {
+                                    "suppose this is an expensive message argument coming as a Supplier" })
+                            .collect(Collectors.toList()));
         }
     }
 
