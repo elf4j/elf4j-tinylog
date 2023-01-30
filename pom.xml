@@ -30,7 +30,7 @@
 
     <groupId>io.github.elf4j</groupId>
     <artifactId>elf4j-tinylog</artifactId>
-    <version>9.1.3</version>
+    <version>9.1.6</version>
 
     <packaging>jar</packaging>
     <name>elf4j-tinylog</name>
@@ -66,8 +66,8 @@
     <dependencies>
         <dependency>
             <groupId>io.github.elf4j</groupId>
-            <artifactId>elf4j-api</artifactId>
-            <version>9.0.1</version>
+            <artifactId>elf4j</artifactId>
+            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.tinylog</groupId>
@@ -77,13 +77,13 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.9.0</version>
+            <version>5.9.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-params</artifactId>
-            <version>5.9.0</version>
+            <version>5.9.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>

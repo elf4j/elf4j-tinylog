@@ -133,15 +133,15 @@ final class TinylogLogger implements Logger {
         tinylog(t, message, args);
     }
 
+    @NonNull TinylogLoggerFactory getTinylogLoggerFactory() {
+        return tinylogLoggerFactory;
+    }
+
     private Logger atLevel(Level level) {
         if (this.level == level) {
             return this;
         }
         return tinylogLoggerFactory.getLogger(this.name, level);
-    }
-
-    @NonNull TinylogLoggerFactory getTinylogLoggerFactory() {
-        return tinylogLoggerFactory;
     }
 
     private void tinylog(@Nullable final Throwable t, @Nullable final Object message, @Nullable final Object[] args) {

@@ -97,6 +97,21 @@ public final class TinylogLoggerFactory implements LoggerFactory {
         return loggerCache;
     }
 
+    @Override
+    public Logger logger() {
+        return getLogger(null, null);
+    }
+
+    @Override
+    public Logger logger(@Nullable String name) {
+        return getLogger(name, null);
+    }
+
+    @Override
+    public Logger logger(@Nullable Class<?> clazz) {
+        return getLogger(clazz == null ? null : clazz.getName(), null);
+    }
+
     void evictCachedLoggers() {
         loggerCache.values().forEach(Map::clear);
     }
@@ -122,20 +137,5 @@ public final class TinylogLoggerFactory implements LoggerFactory {
 
     LoggingProvider getLoggingProvider() {
         return loggingProvider;
-    }
-
-    @Override
-    public Logger logger() {
-        return getLogger(null, null);
-    }
-
-    @Override
-    public Logger logger(@Nullable String name) {
-        return getLogger(name, null);
-    }
-
-    @Override
-    public Logger logger(@Nullable Class<?> clazz) {
-        return getLogger(clazz == null ? null : clazz.getName(), null);
     }
 }
