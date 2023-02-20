@@ -64,10 +64,6 @@ final class TinylogLogger implements Logger {
         this.loggingProvider = tinylogLoggerFactory.getLoggingProvider();
     }
 
-    private static Object resolve(Object o) {
-        return o instanceof Supplier<?> ? ((Supplier<?>) o).get() : o;
-    }
-
     @Override
     public Logger atDebug() {
         return atLevel(DEBUG);
@@ -133,17 +129,6 @@ final class TinylogLogger implements Logger {
         tinylog(t, message, args);
     }
 
-    @NonNull TinylogLoggerFactory getTinylogLoggerFactory() {
-        return tinylogLoggerFactory;
-    }
-
-    private Logger atLevel(Level level) {
-        if (this.level == level) {
-            return this;
-        }
-        return tinylogLoggerFactory.getLogger(this.name, level);
-    }
-
     private void tinylog(@Nullable final Throwable t, @Nullable final Object message, @Nullable final Object[] args) {
         if (!this.isEnabled()) {
             return;
@@ -155,5 +140,20 @@ final class TinylogLogger implements Logger {
                 args == null ? null : MESSAGE_FORMATTER,
                 resolve(message),
                 args == null ? null : Arrays.stream(args).map(TinylogLogger::resolve).toArray());
+    }
+
+    private static Object resolve(Object o) {
+        return o instanceof Supplier<?> ? ((Supplier<?>) o).get() : o;
+    }
+
+    private Logger atLevel(Level level) {
+        if (this.level == level) {
+            return this;
+        }
+        return tinylogLoggerFactory.getLogger(this.name, level);
+    }
+
+    @NonNull TinylogLoggerFactory getTinylogLoggerFactory() {
+        return tinylogLoggerFactory;
     }
 }

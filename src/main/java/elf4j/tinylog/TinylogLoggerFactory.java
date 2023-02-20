@@ -63,23 +63,6 @@ public final class TinylogLoggerFactory implements LoggerFactory {
         this.minimumTinyLogLevel = this.loggingProvider.getMinimumLevel();
     }
 
-    private static @NonNull String defaultLoggerName(StackTraceElement[] stackTraceElements) {
-        int i = 0;
-        String loggerInterfaceName = Logger.class.getName();
-        for (; i < stackTraceElements.length; i++) {
-            if (stackTraceElements[i].getClassName().equals(loggerInterfaceName)) {
-                break;
-            }
-        }
-        for (i++; i < stackTraceElements.length; i++) {
-            StackTraceElement caller = stackTraceElements[i];
-            if (!caller.getClassName().equals(loggerInterfaceName)) {
-                return caller.getClassName();
-            }
-        }
-        throw new NoSuchElementException();
-    }
-
     private static @NonNull EnumMap<Level, org.tinylog.Level> newLevelMap() {
         EnumMap<Level, org.tinylog.Level> levelMap = new EnumMap<>(Level.class);
         levelMap.put(TRACE, org.tinylog.Level.TRACE);
@@ -112,16 +95,6 @@ public final class TinylogLoggerFactory implements LoggerFactory {
         return getLogger(clazz == null ? null : clazz.getName(), null);
     }
 
-    void evictCachedLoggers() {
-        loggerCache.values().forEach(Map::clear);
-    }
-
-    void evictCachedLoggers(@NonNull String loggerNameStartPattern) {
-        loggerCache.values()
-                .forEach(levelOfLoggers -> levelOfLoggers.keySet()
-                        .removeIf(loggerName -> loggerName.startsWith(loggerNameStartPattern)));
-    }
-
     TinylogLogger getLogger(final String name, final Level level) {
         String eName = name == null ? defaultLoggerName(Thread.currentThread().getStackTrace()) : name;
         Level eLevel = level == null ? DEFAULT_LOG_LEVEL : level;
@@ -133,6 +106,33 @@ public final class TinylogLoggerFactory implements LoggerFactory {
                     tLevel);
             return new TinylogLogger(eName, eLevel, enabled, this);
         });
+    }
+
+    private static @NonNull String defaultLoggerName(StackTraceElement[] stackTraceElements) {
+        int i = 0;
+        String loggerInterfaceName = Logger.class.getName();
+        for (; i < stackTraceElements.length; i++) {
+            if (stackTraceElements[i].getClassName().equals(loggerInterfaceName)) {
+                break;
+            }
+        }
+        for (++i; i < stackTraceElements.length; i++) {
+            StackTraceElement caller = stackTraceElements[i];
+            if (!caller.getClassName().equals(loggerInterfaceName)) {
+                return caller.getClassName();
+            }
+        }
+        throw new NoSuchElementException();
+    }
+
+    void evictCachedLoggers() {
+        loggerCache.values().forEach(Map::clear);
+    }
+
+    void evictCachedLoggers(@NonNull String loggerNameStartPattern) {
+        loggerCache.values()
+                .forEach(levelOfLoggers -> levelOfLoggers.keySet()
+                        .removeIf(loggerName -> loggerName.startsWith(loggerNameStartPattern)));
     }
 
     LoggingProvider getLoggingProvider() {
