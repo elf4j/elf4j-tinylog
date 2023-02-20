@@ -117,9 +117,9 @@ public final class TinylogLoggerFactory implements LoggerFactory {
             }
         }
         for (++i; i < stackTraceElements.length; i++) {
-            StackTraceElement caller = stackTraceElements[i];
-            if (!caller.getClassName().equals(loggerInterfaceName)) {
-                return caller.getClassName();
+            String callerClassName = stackTraceElements[i].getClassName();
+            if (!callerClassName.equals(loggerInterfaceName)) {
+                return callerClassName;
             }
         }
         throw new NoSuchElementException();
