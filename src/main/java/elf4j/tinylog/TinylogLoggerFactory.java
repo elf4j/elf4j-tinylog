@@ -109,8 +109,8 @@ public final class TinylogLoggerFactory implements LoggerFactory {
     }
 
     private static @NonNull String defaultLoggerName(StackTraceElement[] stackTraceElements) {
-        int i = 0;
         String loggerInterfaceName = Logger.class.getName();
+        int i = 0;
         for (; i < stackTraceElements.length; i++) {
             if (stackTraceElements[i].getClassName().equals(loggerInterfaceName)) {
                 break;
