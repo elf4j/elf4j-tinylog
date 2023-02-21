@@ -7,10 +7,9 @@ Java ([ELF4J](https://github.com/elf4j/elf4j)) SPI
 
 ## User story
 
-As a service provider of the [ELF4J](https://github.com/elf4j/elf4j) SPI, I want to bind the logging capabilities of
-tinylog to the ELF4J client application via the
-Java [Service Provider Framework](https://docs.oracle.com/javase/8/docs/api/java/util/ServiceLoader.html), so that any
-application using the ELF4J API for logging can opt to use tinylog at deployment time without code change.
+As a logging service provider of the [ELF4J](https://github.com/elf4j/elf4j) SPI, I want to bind the logging
+capabilities of tinylog to ELF4J client applications, so that any application using the ELF4J API for logging can opt to
+use tinylog at deployment time without code change.
 
 ## Prerequisite
 
