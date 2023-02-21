@@ -70,8 +70,12 @@ public final class TinylogLoggerFactory implements LoggerFactory {
      */
     public TinylogLoggerFactory() {
         this.loggingProvider = ProviderRegistry.getLoggingProvider();
-        loggerCache = new EnumMap<>(Level.class);
-        EnumSet.allOf(Level.class).forEach(level -> loggerCache.put(level, new ConcurrentHashMap<>()));
+        this.loggerCache = new EnumMap<>(Level.class);
+        EnumSet.allOf(Level.class).forEach(level -> this.loggerCache.put(level, new ConcurrentHashMap<>()));
+    }
+
+    private static @NonNull String defaultLoggerName() {
+        return new Throwable().getStackTrace()[CALLER_DEPTH_DEFAULT_NAME_INSTANCE].getClassName();
     }
 
     @Override
@@ -101,10 +105,6 @@ public final class TinylogLoggerFactory implements LoggerFactory {
                                         null,
                                         LEVEL_MAP.get(levelKey)),
                                 this));
-    }
-
-    private static @NonNull String defaultLoggerName() {
-        return new Throwable().getStackTrace()[CALLER_DEPTH_DEFAULT_NAME_INSTANCE].getClassName();
     }
 
     LoggingProvider getLoggingProvider() {
