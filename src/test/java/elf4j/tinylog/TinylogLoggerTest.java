@@ -40,7 +40,7 @@ class TinylogLoggerTest {
 
     @Nested
     class Placeholder {
-        Logger logger = Logger.instance(Placeholder.class);
+        Logger logger = Logger.instance();
 
         @Test
         void cacheLoggerWithSameNameAndLevel() {
@@ -56,6 +56,8 @@ class TinylogLoggerTest {
                     this.getClass().getName(),
                     logger.getName(),
                     logger.getLevel());
+            Logger defaultInline = Logger.instance();
+            assertSame(logger, defaultInline);
             assertEquals(INFO, logger.getLevel());
         }
 

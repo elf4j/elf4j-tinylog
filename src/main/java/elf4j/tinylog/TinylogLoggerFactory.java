@@ -35,7 +35,6 @@ import javax.annotation.Nullable;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static elf4j.Level.*;
@@ -47,37 +46,32 @@ import static elf4j.Level.*;
  *         ServiceLoader</a>
  */
 public final class TinylogLoggerFactory implements LoggerFactory {
-    static final EnumMap<Level, org.tinylog.Level> LEVEL_MAP = newLevelMap();
+    static final EnumMap<Level, org.tinylog.Level> LEVEL_MAP;
     private static final Level DEFAULT_LOG_LEVEL = INFO;
-    private static final int NEW_INSTANCE_CALLER_DEPTH = 7;
-    private static final int NEW_LEVEL_CALLER_DEPTH = 7;
-    private final EnumMap<Level, Map<String, TinylogLogger>> loggerCache = newLoggerCache();
+    private static final int CALLER_DEPTH_NEW_INSTANCE = 7;
+    private static final int CALLER_DEPTH_NEW_LEVEL = 7;
+    private static final int CALLER_DEPTH_DEFAULT_NAME_INSTANCE = 4;
+
+    static {
+        LEVEL_MAP = new EnumMap<>(Level.class);
+        LEVEL_MAP.put(TRACE, org.tinylog.Level.TRACE);
+        LEVEL_MAP.put(DEBUG, org.tinylog.Level.DEBUG);
+        LEVEL_MAP.put(INFO, org.tinylog.Level.INFO);
+        LEVEL_MAP.put(WARN, org.tinylog.Level.WARN);
+        LEVEL_MAP.put(ERROR, org.tinylog.Level.ERROR);
+        LEVEL_MAP.put(OFF, org.tinylog.Level.OFF);
+    }
+
     private final LoggingProvider loggingProvider;
-    private final org.tinylog.Level minimumTinyLogLevel;
+    private final EnumMap<Level, Map<String, TinylogLogger>> loggerCache;
 
     /**
      * Default constructor required by {@link java.util.ServiceLoader}
      */
     public TinylogLoggerFactory() {
         this.loggingProvider = ProviderRegistry.getLoggingProvider();
-        this.minimumTinyLogLevel = this.loggingProvider.getMinimumLevel();
-    }
-
-    private static @NonNull EnumMap<Level, org.tinylog.Level> newLevelMap() {
-        EnumMap<Level, org.tinylog.Level> levelMap = new EnumMap<>(Level.class);
-        levelMap.put(TRACE, org.tinylog.Level.TRACE);
-        levelMap.put(DEBUG, org.tinylog.Level.DEBUG);
-        levelMap.put(INFO, org.tinylog.Level.INFO);
-        levelMap.put(WARN, org.tinylog.Level.WARN);
-        levelMap.put(ERROR, org.tinylog.Level.ERROR);
-        levelMap.put(OFF, org.tinylog.Level.OFF);
-        return levelMap;
-    }
-
-    private static @NonNull EnumMap<Level, Map<String, TinylogLogger>> newLoggerCache() {
-        EnumMap<Level, Map<String, TinylogLogger>> loggerCache = new EnumMap<>(Level.class);
+        loggerCache = new EnumMap<>(Level.class);
         EnumSet.allOf(Level.class).forEach(level -> loggerCache.put(level, new ConcurrentHashMap<>()));
-        return loggerCache;
     }
 
     @Override
@@ -96,33 +90,21 @@ public final class TinylogLoggerFactory implements LoggerFactory {
     }
 
     TinylogLogger getLogger(final String name, final Level level) {
-        String eName = name == null ? defaultLoggerName(Thread.currentThread().getStackTrace()) : name;
-        Level eLevel = level == null ? DEFAULT_LOG_LEVEL : level;
-        return loggerCache.get(eLevel).computeIfAbsent(eName, key -> {
-            org.tinylog.Level tLevel = LEVEL_MAP.get(eLevel);
-            boolean enabled = tLevel != org.tinylog.Level.OFF && tLevel.ordinal() >= minimumTinyLogLevel.ordinal()
-                    && loggingProvider.isEnabled(level == null ? NEW_INSTANCE_CALLER_DEPTH : NEW_LEVEL_CALLER_DEPTH,
-                    null,
-                    tLevel);
-            return new TinylogLogger(eName, eLevel, enabled, this);
-        });
+        String nameKey = (name == null) ? defaultLoggerName() : name;
+        Level levelKey = (level == null) ? DEFAULT_LOG_LEVEL : level;
+        return loggerCache.get(levelKey)
+                .computeIfAbsent(nameKey,
+                        key -> new TinylogLogger(nameKey,
+                                levelKey,
+                                loggingProvider.isEnabled(
+                                        (level == null) ? CALLER_DEPTH_NEW_INSTANCE : CALLER_DEPTH_NEW_LEVEL,
+                                        null,
+                                        LEVEL_MAP.get(levelKey)),
+                                this));
     }
 
-    private static @NonNull String defaultLoggerName(StackTraceElement[] stackTraceElements) {
-        String loggerInterfaceName = Logger.class.getName();
-        int i = 0;
-        for (; i < stackTraceElements.length; i++) {
-            if (stackTraceElements[i].getClassName().equals(loggerInterfaceName)) {
-                break;
-            }
-        }
-        for (++i; i < stackTraceElements.length; i++) {
-            String callerClassName = stackTraceElements[i].getClassName();
-            if (!callerClassName.equals(loggerInterfaceName)) {
-                return callerClassName;
-            }
-        }
-        throw new NoSuchElementException();
+    private static @NonNull String defaultLoggerName() {
+        return new Throwable().getStackTrace()[CALLER_DEPTH_DEFAULT_NAME_INSTANCE].getClassName();
     }
 
     LoggingProvider getLoggingProvider() {
