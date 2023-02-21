@@ -47,11 +47,11 @@ import static elf4j.Level.*;
 final class TinylogLogger implements Logger {
     private static final int LOG_CALLER_DEPTH = 3;
     private static final MessageFormatter MESSAGE_FORMATTER = new LegacyMessageFormatter();
-    private final boolean enabled;
-    @NonNull private final Level level;
+    @NonNull private final TinylogLoggerFactory tinylogLoggerFactory;
     @NonNull private final LoggingProvider loggingProvider;
     @NonNull private final String name;
-    @NonNull private final TinylogLoggerFactory tinylogLoggerFactory;
+    @NonNull private final Level level;
+    private final boolean enabled;
 
     TinylogLogger(@NonNull String name,
             @NonNull Level level,
@@ -151,9 +151,5 @@ final class TinylogLogger implements Logger {
             return this;
         }
         return tinylogLoggerFactory.getLogger(this.name, level);
-    }
-
-    @NonNull TinylogLoggerFactory getTinylogLoggerFactory() {
-        return tinylogLoggerFactory;
     }
 }

@@ -125,16 +125,6 @@ public final class TinylogLoggerFactory implements LoggerFactory {
         throw new NoSuchElementException();
     }
 
-    void evictCachedLoggers() {
-        loggerCache.values().forEach(Map::clear);
-    }
-
-    void evictCachedLoggers(@NonNull String loggerNameStartPattern) {
-        loggerCache.values()
-                .forEach(levelOfLoggers -> levelOfLoggers.keySet()
-                        .removeIf(loggerName -> loggerName.startsWith(loggerNameStartPattern)));
-    }
-
     LoggingProvider getLoggingProvider() {
         return loggingProvider;
     }
