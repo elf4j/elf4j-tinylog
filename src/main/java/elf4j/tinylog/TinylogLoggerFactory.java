@@ -31,10 +31,10 @@ import lombok.NonNull;
 import org.tinylog.provider.LoggingProvider;
 import org.tinylog.provider.ProviderRegistry;
 
-import javax.annotation.Nullable;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static elf4j.Level.*;
@@ -46,11 +46,10 @@ import static elf4j.Level.*;
  *         ServiceLoader</a>
  */
 public final class TinylogLoggerFactory implements LoggerFactory {
-    static final EnumMap<Level, org.tinylog.Level> LEVEL_MAP;
-    private static final Level DEFAULT_LOG_LEVEL = INFO;
-    private static final int CALLER_DEPTH_NEW_INSTANCE = 7;
-    private static final int CALLER_DEPTH_NEW_LEVEL = 7;
-    private static final int CALLER_DEPTH_DEFAULT_NAME_INSTANCE = 4;
+    private static final EnumMap<Level, org.tinylog.Level> LEVEL_MAP;
+    private static final int CALLER_DEPTH_ENABLEMENT_NEW_INSTANCE = 7;
+    private static final int CALLER_DEPTH_ENABLEMENT_NEW_LEVEL = 7;
+    private static final int CALLER_DEPTH_NEW_INSTANCE = 4;
 
     static {
         LEVEL_MAP = new EnumMap<>(Level.class);
@@ -64,6 +63,7 @@ public final class TinylogLoggerFactory implements LoggerFactory {
 
     private final LoggingProvider loggingProvider;
     private final EnumMap<Level, Map<String, TinylogLogger>> loggerCache;
+    private final Level defaultLogLevel;
 
     /**
      * Default constructor required by {@link java.util.ServiceLoader}
@@ -72,10 +72,24 @@ public final class TinylogLoggerFactory implements LoggerFactory {
         this.loggingProvider = ProviderRegistry.getLoggingProvider();
         this.loggerCache = new EnumMap<>(Level.class);
         EnumSet.allOf(Level.class).forEach(level -> this.loggerCache.put(level, new ConcurrentHashMap<>()));
+        this.defaultLogLevel = translate(this.loggingProvider.getMinimumLevel(null));
     }
 
-    private static @NonNull String defaultLoggerName() {
-        return new Throwable().getStackTrace()[CALLER_DEPTH_DEFAULT_NAME_INSTANCE].getClassName();
+    static org.tinylog.Level translate(Level elf4jLevel) {
+        return LEVEL_MAP.get(elf4jLevel);
+    }
+
+    private static @NonNull String makerClassName() {
+        return new Throwable().getStackTrace()[CALLER_DEPTH_NEW_INSTANCE].getClassName();
+    }
+
+    private static Level translate(org.tinylog.Level tinylogLevel) {
+        return LEVEL_MAP.entrySet()
+                .stream()
+                .filter(e -> e.getValue() == tinylogLevel)
+                .findAny()
+                .orElseThrow(NoSuchElementException::new)
+                .getKey();
     }
 
     @Override
@@ -83,27 +97,15 @@ public final class TinylogLoggerFactory implements LoggerFactory {
         return getLogger(null, null);
     }
 
-    @Override
-    public Logger logger(@Nullable String name) {
-        return getLogger(name, null);
-    }
-
-    @Override
-    public Logger logger(@Nullable Class<?> clazz) {
-        return getLogger(clazz == null ? null : clazz.getName(), null);
-    }
-
     TinylogLogger getLogger(final String name, final Level level) {
-        String nameKey = (name == null) ? defaultLoggerName() : name;
-        Level levelKey = (level == null) ? DEFAULT_LOG_LEVEL : level;
+        String nameKey = (name == null) ? makerClassName() : name;
+        Level levelKey = (level == null) ? defaultLogLevel : level;
         return loggerCache.get(levelKey)
                 .computeIfAbsent(nameKey,
                         key -> new TinylogLogger(nameKey,
                                 levelKey,
-                                loggingProvider.isEnabled(
-                                        (level == null) ? CALLER_DEPTH_NEW_INSTANCE : CALLER_DEPTH_NEW_LEVEL,
-                                        null,
-                                        LEVEL_MAP.get(levelKey)),
+                                loggingProvider.isEnabled((level == null) ? CALLER_DEPTH_ENABLEMENT_NEW_INSTANCE :
+                                        CALLER_DEPTH_ENABLEMENT_NEW_LEVEL, null, translate(levelKey)),
                                 this));
     }
 

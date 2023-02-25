@@ -54,7 +54,7 @@ class TinylogLoggerTest {
             logger.log("no-arg logger instance {} in class {} has default logger name: {}, and default level: {}",
                     logger,
                     this.getClass().getName(),
-                    logger.getName(),
+                    ((TinylogLogger) logger).getCallerClassName(),
                     logger.getLevel());
             Logger defaultInline = Logger.instance();
             assertSame(logger, defaultInline);
@@ -69,40 +69,17 @@ class TinylogLoggerTest {
 
     @Nested
     class ReadmeSample {
-        private final Logger defaultLogger = Logger.instance();
-
-        @Test
-        void messagesAndArgs() {
-            defaultLogger.log("default logger name is usually the same as the API caller class name");
-            assertEquals(ReadmeSample.class.getName(), defaultLogger.getName());
-            defaultLogger.log("default log level is {}, which depends on the individual logging provider",
-                    defaultLogger.getLevel());
-            Logger info = defaultLogger.atInfo();
-            info.log("level set omitted here but we know the level is {}", INFO);
-            assertEquals(INFO, info.getLevel());
-            info.log("Supplier and other Object args can be mixed: Object arg1 {}, Supplier arg2 {}, Object arg3 {}",
-                    "a11111",
-                    (Supplier) () -> "a22222",
-                    "a33333");
-            info.atWarn()
-                    .log("switched to WARN level on the fly. that is, {} is a different Logger instance from {}",
-                            "`info.atWarn()`",
-                            "`info`");
-            assertNotSame(info, info.atWarn());
-            assertEquals(info.getName(), info.atWarn().getName(), "same name, only level is different");
-            assertEquals(WARN, info.atWarn().getLevel());
-            assertEquals(INFO, info.getLevel(), "immutable info's level never changes");
-        }
+        private final TinylogLogger defaultLogger = (TinylogLogger) Logger.instance();
 
         @Test
         void exceptionMessageAndArgs() {
-            Logger error = defaultLogger.atError();
+            TinylogLogger error = (TinylogLogger) defaultLogger.atError();
             Throwable ex = new Exception("ex message");
             error.log(ex);
             error.atInfo()
                     .log("{} is an immutable Logger instance whose name is {}, and level is {}",
                             error,
-                            error.getName(),
+                            error.getCallerClassName(),
                             error.getLevel());
             assertEquals(Level.ERROR, error.getLevel());
             error.atError()
@@ -120,11 +97,36 @@ class TinylogLoggerTest {
                                     "suppose this is an expensive message argument coming as a Supplier" })
                             .collect(Collectors.toList()));
         }
+
+        @Test
+        void messagesAndArgs() {
+            defaultLogger.log("default logger name is usually the same as the API caller class name");
+            assertEquals(ReadmeSample.class.getName(), defaultLogger.getCallerClassName());
+            defaultLogger.log("default log level is {}, which depends on the individual logging provider",
+                    defaultLogger.getLevel());
+            TinylogLogger info = (TinylogLogger) defaultLogger.atInfo();
+            info.log("level set omitted here but we know the level is {}", INFO);
+            assertEquals(INFO, info.getLevel());
+            info.log("Supplier and other Object args can be mixed: Object arg1 {}, Supplier arg2 {}, Object arg3 {}",
+                    "a11111",
+                    (Supplier) () -> "a22222",
+                    "a33333");
+            info.atWarn()
+                    .log("switched to WARN level on the fly. that is, {} is a different Logger instance from {}",
+                            "`info.atWarn()`",
+                            "`info`");
+            assertNotSame(info, info.atWarn());
+            assertEquals(info.getCallerClassName(),
+                    ((TinylogLogger) info.atWarn()).getCallerClassName(),
+                    "same name, only level is different");
+            assertEquals(WARN, info.atWarn().getLevel());
+            assertEquals(INFO, info.getLevel(), "immutable info's level never changes");
+        }
     }
 
     @Nested
     class ReadmeSample2 {
-        private final Logger logger = Logger.instance(ReadmeSample2.class);
+        private final TinylogLogger logger = (TinylogLogger) Logger.instance();
 
         @Test
         void levelGuard() {
@@ -138,28 +140,6 @@ class TinylogLoggerTest {
             }
             logger.atDebug()
                     .log((Supplier) () -> "alternative to the level guard, using a Supplier<?> function like this should achieve the same goal of avoiding unnecessary message creation, pending quality of the logging provider");
-        }
-    }
-
-    @Nested
-    class loggerName {
-        @Test
-        void blankOrEmptyNamesStayAsIs() {
-            String blank = "   ";
-            assertEquals(blank, Logger.instance(blank).getName());
-            String empty = "";
-            assertEquals("", Logger.instance(empty).getName());
-        }
-
-        @Test
-        void optToSupplyCallerClassNameForNullOrNoargInstance() {
-            Logger localLogger = Logger.instance();
-            String thisClassName = this.getClass().getName();
-            localLogger.log("method local logger {} in class {}", localLogger, thisClassName);
-
-            assertSame(localLogger, Logger.instance((String) null));
-            assertSame(localLogger, Logger.instance((Class<?>) null));
-            assertTrue(localLogger.getName().contains(thisClassName));
         }
     }
 }

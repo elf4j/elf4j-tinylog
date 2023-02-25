@@ -49,15 +49,15 @@ final class TinylogLogger implements Logger {
     private static final MessageFormatter MESSAGE_FORMATTER = new LegacyMessageFormatter();
     @NonNull private final TinylogLoggerFactory tinylogLoggerFactory;
     @NonNull private final LoggingProvider loggingProvider;
-    @NonNull private final String name;
+    @NonNull private final String callerClassName;
     @NonNull private final Level level;
     private final boolean enabled;
 
-    TinylogLogger(@NonNull String name,
+    TinylogLogger(@NonNull String callerClassName,
             @NonNull Level level,
             boolean enabled,
             @NonNull TinylogLoggerFactory tinylogLoggerFactory) {
-        this.name = name;
+        this.callerClassName = callerClassName;
         this.level = level;
         this.enabled = enabled;
         this.tinylogLoggerFactory = tinylogLoggerFactory;
@@ -99,11 +99,6 @@ final class TinylogLogger implements Logger {
     }
 
     @Override
-    public @NonNull String getName() {
-        return name;
-    }
-
-    @Override
     public boolean isEnabled() {
         return this.enabled;
     }
@@ -133,11 +128,15 @@ final class TinylogLogger implements Logger {
         tinylog(t, message, args);
     }
 
+    public @NonNull String getCallerClassName() {
+        return callerClassName;
+    }
+
     private Logger atLevel(Level level) {
         if (this.level == level) {
             return this;
         }
-        return tinylogLoggerFactory.getLogger(this.name, level);
+        return tinylogLoggerFactory.getLogger(this.callerClassName, level);
     }
 
     private void tinylog(@Nullable final Throwable t, @Nullable final Object message, @Nullable final Object[] args) {
@@ -146,7 +145,7 @@ final class TinylogLogger implements Logger {
         }
         loggingProvider.log(LOG_CALLER_DEPTH,
                 null,
-                TinylogLoggerFactory.LEVEL_MAP.get(this.level),
+                TinylogLoggerFactory.translate(this.level),
                 t,
                 args == null ? null : MESSAGE_FORMATTER,
                 resolve(message),

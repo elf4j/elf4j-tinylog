@@ -1,25 +1,21 @@
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.elf4j/elf4j-tinylog.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22io.github.elf4j%22%20AND%20a:%22elf4j-tinylog%22)
-
-# elf4j-tinylog
-
 The [tinylog](https://tinylog.org/v2/) service provider binding for Easy Logging Facade for
 Java ([ELF4J](https://github.com/elf4j/elf4j)) SPI
 
-## User story
+# User story
 
 As a logging service provider of the [ELF4J](https://github.com/elf4j/elf4j) SPI, I want to bind the logging
 capabilities of tinylog to ELF4J client applications, so that any application using the ELF4J API for logging can opt to
 use tinylog at deployment time without code change.
 
-## Prerequisite
+# Prerequisite
 
 Java 8+
 
-## Get it...
+# Get it...
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.elf4j/elf4j-tinylog.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22io.github.elf4j%22%20AND%20a:%22elf4j-tinylog%22)
 
-## Use it...
+# Use it...
 
 If you are using the [ELF4J API](https://github.com/elf4j/elf4j) for logging, and wish to select or
 change to use tinylog as the run-time implementation, then simply pack this binding JAR in the classpath when the
