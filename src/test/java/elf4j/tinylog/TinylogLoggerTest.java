@@ -58,7 +58,7 @@ class TinylogLoggerTest {
                     logger.getLevel());
             Logger defaultInline = Logger.instance();
             assertSame(logger, defaultInline);
-            assertEquals(INFO, logger.getLevel());
+            assertEquals(TRACE, logger.getLevel());
         }
 
         @Test
