@@ -42,7 +42,6 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.function.Supplier;
 
 import static elf4j.Level.*;
@@ -57,11 +56,11 @@ final class TinylogLogger implements Logger {
     private static final LoggingProvider LOGGING_PROVIDER = ProviderRegistry.getLoggingProvider();
     private static final MessageFormatter MESSAGE_FORMATTER = new LegacyMessageFormatter();
     private static final EnumMap<Level, Map<String, TinylogLogger>> LOGGER_CACHE;
-    private static final ConcurrentMap<TinylogLogger, Boolean> ENABLEMENT_CACHE;
+    private static final Map<TinylogLogger, Boolean> ENABLEMENT_CACHE;
     private static final EnumMap<Level, org.tinylog.Level> TO_PROVIDER_LEVEL;
     private static final EnumMap<org.tinylog.Level, Level> FROM_PROVIDER_LEVEL;
-    private static final int CALLER_DEPTH_CHECK_ENABLED = 5;
-    private static final int CALLER_DEPTH_LOG_ENABLED = 6;
+    private static final int CALLER_DEPTH_ENABLED_CHECK = 5;
+    private static final int CALLER_DEPTH_ENABLED_LOG = 6;
     private static final int CALLER_DEPTH_LOG = 3;
 
     static {
@@ -148,7 +147,7 @@ final class TinylogLogger implements Logger {
     @Override
     public boolean isEnabled() {
         return ENABLEMENT_CACHE.computeIfAbsent(this,
-                key -> LOGGING_PROVIDER.isEnabled(CALLER_DEPTH_CHECK_ENABLED, null, key.tinylogLevel));
+                logger -> LOGGING_PROVIDER.isEnabled(CALLER_DEPTH_ENABLED_CHECK, null, logger.tinylogLevel));
     }
 
     @Override
@@ -187,15 +186,17 @@ final class TinylogLogger implements Logger {
         return instance(this.callerClassName, level);
     }
 
-    private void tinylog(@Nullable final Throwable t, @Nullable final Object message, @Nullable final Object[] args) {
+    private void tinylog(@Nullable final Throwable exception,
+            @Nullable final Object message,
+            @Nullable final Object[] args) {
         if (Boolean.FALSE.equals((ENABLEMENT_CACHE.computeIfAbsent(this,
-                key -> LOGGING_PROVIDER.isEnabled(CALLER_DEPTH_LOG_ENABLED, null, key.tinylogLevel))))) {
+                logger -> LOGGING_PROVIDER.isEnabled(CALLER_DEPTH_ENABLED_LOG, null, logger.tinylogLevel))))) {
             return;
         }
         LOGGING_PROVIDER.log(CALLER_DEPTH_LOG,
                 null,
                 this.tinylogLevel,
-                t,
+                exception,
                 args == null ? null : MESSAGE_FORMATTER,
                 resolve(message),
                 args == null ? null : Arrays.stream(args).map(TinylogLogger::resolve).toArray());
