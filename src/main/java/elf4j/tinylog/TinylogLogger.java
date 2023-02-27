@@ -26,6 +26,7 @@ package elf4j.tinylog;
 
 import elf4j.Level;
 import elf4j.Logger;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 import org.tinylog.format.LegacyMessageFormatter;
@@ -36,8 +37,12 @@ import org.tinylog.runtime.RuntimeProvider;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
-import java.util.*;
+import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.Supplier;
 
 import static elf4j.Level.*;
@@ -47,53 +52,55 @@ import static elf4j.Level.*;
  */
 @Immutable
 @ToString
+@EqualsAndHashCode
 final class TinylogLogger implements Logger {
     private static final LoggingProvider LOGGING_PROVIDER = ProviderRegistry.getLoggingProvider();
     private static final MessageFormatter MESSAGE_FORMATTER = new LegacyMessageFormatter();
     private static final EnumMap<Level, Map<String, TinylogLogger>> LOGGER_CACHE;
-    private static final EnumMap<Level, org.tinylog.Level> LEVEL_MAP;
-    private static final int CALLER_DEPTH_DEFAULT_LEVEL = 9;
-    private static final int CALLER_DEPTH_NEW_LEVEL = 8;
+    private static final ConcurrentMap<TinylogLogger, Boolean> ENABLEMENT_CACHE;
+    private static final EnumMap<Level, org.tinylog.Level> TO_PROVIDER_LEVEL;
+    private static final EnumMap<org.tinylog.Level, Level> FROM_PROVIDER_LEVEL;
+    private static final int CALLER_DEPTH_CHECK_ENABLED = 5;
+    private static final int CALLER_DEPTH_LOG_ENABLED = 6;
     private static final int CALLER_DEPTH_LOG = 3;
 
     static {
-        LEVEL_MAP = new EnumMap<>(Level.class);
-        LEVEL_MAP.put(TRACE, org.tinylog.Level.TRACE);
-        LEVEL_MAP.put(DEBUG, org.tinylog.Level.DEBUG);
-        LEVEL_MAP.put(INFO, org.tinylog.Level.INFO);
-        LEVEL_MAP.put(WARN, org.tinylog.Level.WARN);
-        LEVEL_MAP.put(ERROR, org.tinylog.Level.ERROR);
-        LEVEL_MAP.put(OFF, org.tinylog.Level.OFF);
+        TO_PROVIDER_LEVEL = new EnumMap<>(Level.class);
+        TO_PROVIDER_LEVEL.put(TRACE, org.tinylog.Level.TRACE);
+        TO_PROVIDER_LEVEL.put(DEBUG, org.tinylog.Level.DEBUG);
+        TO_PROVIDER_LEVEL.put(INFO, org.tinylog.Level.INFO);
+        TO_PROVIDER_LEVEL.put(WARN, org.tinylog.Level.WARN);
+        TO_PROVIDER_LEVEL.put(ERROR, org.tinylog.Level.ERROR);
+        TO_PROVIDER_LEVEL.put(OFF, org.tinylog.Level.OFF);
+
+        FROM_PROVIDER_LEVEL = new EnumMap<>(org.tinylog.Level.class);
+        FROM_PROVIDER_LEVEL.put(org.tinylog.Level.TRACE, TRACE);
+        FROM_PROVIDER_LEVEL.put(org.tinylog.Level.DEBUG, DEBUG);
+        FROM_PROVIDER_LEVEL.put(org.tinylog.Level.INFO, INFO);
+        FROM_PROVIDER_LEVEL.put(org.tinylog.Level.WARN, WARN);
+        FROM_PROVIDER_LEVEL.put(org.tinylog.Level.ERROR, ERROR);
+        FROM_PROVIDER_LEVEL.put(org.tinylog.Level.OFF, OFF);
 
         LOGGER_CACHE = new EnumMap<>(Level.class);
         EnumSet.allOf(Level.class).forEach(level -> LOGGER_CACHE.put(level, new ConcurrentHashMap<>()));
+
+        ENABLEMENT_CACHE = new ConcurrentHashMap<>();
     }
 
-    @NonNull private final String callerClassName;
-    @NonNull private final Level level;
-    @NonNull private final org.tinylog.Level tLevel;
+    @EqualsAndHashCode.Include @NonNull private final String callerClassName;
+    @EqualsAndHashCode.Include @NonNull private final Level level;
+    @NonNull private final org.tinylog.Level tinylogLevel;
 
-    private final boolean enabled;
-
-    TinylogLogger(@NonNull String callerClassName, @NonNull Level level, boolean enabled) {
+    TinylogLogger(@NonNull String callerClassName, @NonNull Level level) {
         this.callerClassName = callerClassName;
         this.level = level;
-        this.enabled = enabled;
-        this.tLevel = translate(this.level);
+        this.tinylogLevel = translate(this.level);
     }
 
-    static TinylogLogger getLogger(final String name, final Level level) {
+    static TinylogLogger instance(final String name, final Level level) {
         String nameKey = (name == null) ? RuntimeProvider.getCallerClassName(Logger.class.getName()) : name;
         Level levelKey = (level == null) ? translate(LOGGING_PROVIDER.getMinimumLevel(null)) : level;
-        return LOGGER_CACHE.get(levelKey)
-                .computeIfAbsent(nameKey,
-                        key -> new TinylogLogger(nameKey, levelKey, isEnabled(level == null, translate(levelKey))));
-    }
-
-    private static boolean isEnabled(boolean defaultLevel, org.tinylog.Level tinylogLevel) {
-        return LOGGING_PROVIDER.isEnabled(defaultLevel ? CALLER_DEPTH_DEFAULT_LEVEL : CALLER_DEPTH_NEW_LEVEL,
-                null,
-                tinylogLevel);
+        return LOGGER_CACHE.get(levelKey).computeIfAbsent(nameKey, key -> new TinylogLogger(nameKey, levelKey));
     }
 
     private static Object resolve(Object o) {
@@ -101,16 +108,11 @@ final class TinylogLogger implements Logger {
     }
 
     private static Level translate(org.tinylog.Level tinylogLevel) {
-        return LEVEL_MAP.entrySet()
-                .stream()
-                .filter(e -> e.getValue() == tinylogLevel)
-                .findAny()
-                .orElseThrow(NoSuchElementException::new)
-                .getKey();
+        return FROM_PROVIDER_LEVEL.get(tinylogLevel);
     }
 
     private static org.tinylog.Level translate(Level elf4jLevel) {
-        return LEVEL_MAP.get(elf4jLevel);
+        return TO_PROVIDER_LEVEL.get(elf4jLevel);
     }
 
     @Override
@@ -145,7 +147,8 @@ final class TinylogLogger implements Logger {
 
     @Override
     public boolean isEnabled() {
-        return this.enabled;
+        return ENABLEMENT_CACHE.computeIfAbsent(this,
+                key -> LOGGING_PROVIDER.isEnabled(CALLER_DEPTH_CHECK_ENABLED, null, key.tinylogLevel));
     }
 
     @Override
@@ -181,16 +184,17 @@ final class TinylogLogger implements Logger {
         if (this.level == level) {
             return this;
         }
-        return getLogger(this.callerClassName, level);
+        return instance(this.callerClassName, level);
     }
 
     private void tinylog(@Nullable final Throwable t, @Nullable final Object message, @Nullable final Object[] args) {
-        if (!isEnabled()) {
+        if (Boolean.FALSE.equals((ENABLEMENT_CACHE.computeIfAbsent(this,
+                key -> LOGGING_PROVIDER.isEnabled(CALLER_DEPTH_LOG_ENABLED, null, key.tinylogLevel))))) {
             return;
         }
         LOGGING_PROVIDER.log(CALLER_DEPTH_LOG,
                 null,
-                this.tLevel,
+                this.tinylogLevel,
                 t,
                 args == null ? null : MESSAGE_FORMATTER,
                 resolve(message),
