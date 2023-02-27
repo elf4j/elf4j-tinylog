@@ -47,5 +47,5 @@ build of an application, somehow, then the `elf4j.logger.factory.fqcn` system pr
 the desired provider. For example,
 
 ```
-java -jar MyApplication.jar -Delf4j.logger.factory.fqcn="elf4j.tinylog.TinylogLoggerFactory"
+java -Delf4j.logger.factory.fqcn="elf4j.tinylog.TinylogLoggerFactory" -jar MyApplication.jar
 ```
