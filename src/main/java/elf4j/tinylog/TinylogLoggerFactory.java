@@ -36,6 +36,6 @@ public final class TinylogLoggerFactory implements LoggerFactory {
 
     @Override
     public TinylogLogger logger() {
-        return TinylogLogger.instance(null, null);
+        return TinylogLogger.instance();
     }
 }

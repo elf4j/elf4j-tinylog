@@ -96,9 +96,9 @@ final class TinylogLogger implements Logger {
         this.tinylogLevel = translate(this.level);
     }
 
-    static TinylogLogger instance(final String name, final Level level) {
-        String nameKey = (name == null) ? RuntimeProvider.getCallerClassName(Logger.class.getName()) : name;
-        Level levelKey = (level == null) ? translate(LOGGING_PROVIDER.getMinimumLevel(null)) : level;
+    static TinylogLogger instance() {
+        String nameKey = RuntimeProvider.getCallerClassName(Logger.class.getName());
+        Level levelKey = translate(LOGGING_PROVIDER.getMinimumLevel(null));
         return LOGGER_CACHE.get(levelKey).computeIfAbsent(nameKey, key -> new TinylogLogger(nameKey, levelKey));
     }
 
@@ -183,7 +183,7 @@ final class TinylogLogger implements Logger {
         if (this.level == level) {
             return this;
         }
-        return instance(this.callerClassName, level);
+        return LOGGER_CACHE.get(level).computeIfAbsent(this.callerClassName, key -> new TinylogLogger(key, level));
     }
 
     private void tinylog(@Nullable final Throwable exception,
