@@ -1,24 +1,26 @@
-The [tinylog](https://tinylog.org/v2/) service provider binding for Easy Logging Facade for
-Java ([ELF4J](https://github.com/elf4j/elf4j)) SPI
+# elf4j-tinylog
 
-# User story
+An adapter to use [tinylog](https://tinylog.org/v2/) as service provider and logging engine
+for [ELF4J](https://github.com/elf4j/elf4j) (Easy Logging Facade for Java) API
 
-As a logging service provider of the [ELF4J](https://github.com/elf4j/elf4j) SPI, I want to bind the logging
-capabilities of tinylog to ELF4J client applications, so that any application using the ELF4J API for logging can opt to
-use tinylog at deployment time without code change.
+## User story
 
-# Prerequisite
+As an application developer using the [ELF4J](https://github.com/elf4j/elf4j) API, I want to have the option of
+selecting [tinylog](https://tinylog.org/v2/) as my log engine, at application deploy time without code change or
+re-compile.
+
+## Prerequisite
 
 Java 8+
 
-# Get it...
+## Get it...
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.elf4j/elf4j-tinylog.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22io.github.elf4j%22%20AND%20a:%22elf4j-tinylog%22)
 
-# Use it...
+## Use it...
 
 If you are using the [ELF4J API](https://github.com/elf4j/elf4j) for logging, and wish to select or
-change to use tinylog as the run-time implementation, then simply pack this binding JAR in the classpath when the
+change to use tinylog as the run-time log engine, then simply pack this binding JAR in the classpath when the
 application deploys. No code change needed. At compile time, the client code is unaware of this run-time logging service
 provider. With the ELF4J facade, opting for tinylog as the logging implementation is a deployment-time decision.
 
