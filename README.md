@@ -1,7 +1,7 @@
 # elf4j-tinylog
 
 An adapter to use [tinylog](https://tinylog.org/v2/) as service provider and logging engine
-for [ELF4J](https://github.com/elf4j/elf4j) (Easy Logging Facade for Java) API
+for the [ELF4J](https://github.com/elf4j/elf4j) (Easy Logging Facade for Java) API
 
 ## User story
 
