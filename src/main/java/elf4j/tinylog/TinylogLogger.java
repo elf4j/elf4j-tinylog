@@ -115,28 +115,11 @@ final class TinylogLogger implements Logger {
     }
 
     @Override
-    public Logger atDebug() {
-        return atLevel(DEBUG);
-    }
-
-    @Override
-    public Logger atError() {
-        return atLevel(ERROR);
-    }
-
-    @Override
-    public Logger atInfo() {
-        return atLevel(INFO);
-    }
-
-    @Override
-    public Logger atTrace() {
-        return atLevel(TRACE);
-    }
-
-    @Override
-    public Logger atWarn() {
-        return atLevel(WARN);
+    public Logger atLevel(Level level) {
+        if (this.level == level) {
+            return this;
+        }
+        return LOGGER_CACHE.get(level).computeIfAbsent(this.callerClassName, key -> new TinylogLogger(key, level));
     }
 
     @Override
@@ -177,13 +160,6 @@ final class TinylogLogger implements Logger {
 
     public @NonNull String getCallerClassName() {
         return callerClassName;
-    }
-
-    private Logger atLevel(Level level) {
-        if (this.level == level) {
-            return this;
-        }
-        return LOGGER_CACHE.get(level).computeIfAbsent(this.callerClassName, key -> new TinylogLogger(key, level));
     }
 
     private void tinylog(@Nullable final Throwable exception,
